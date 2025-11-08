@@ -13,17 +13,54 @@ export default function ProfileDashboard() {
     confirmPassword: ''
   });
   const [heatmapData, setHeatmapData] = useState([]);
+
   // Mock user data
   const userData = {
     username: '',
-    email: '',
-    joinDate: '',
-    totalSessions: 0,
-    totalHours: 0,
-    currentStreak: 0,
-    longestStreak: 0
+    email: ''
   };
 
+    const [recordData, setRecordData] = useState({
+    totalSessions: 0,
+    totalHours: 0,
+    totalIntervals: 0,
+    hairTime: 0,
+    nailTime: 0,
+    eyeTime: 0,
+    noseTime: 0,
+    unfocusedTime: 0,
+    pauseTime: 0
+  });
+
+  const monthlyGraphData = [];
+
+   useEffect(() => {
+    const fetchRecordData = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/get-record/' + JSON.parse(localStorage.getItem('user')).userId);
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        recordData.totalSessions = data.data.user_record.total_sessions;
+        setRecordData({
+          totalSessions: data.data.user_record.total_sessions,
+          totalHours: data.data.user_record.total_hours,
+          totalIntervals: data.data.user_record.total_intervals,
+          hairTime: data.data.user_record.time_hair,
+          nailTime: data.data.user_record.time_nail,
+          eyeTime: data.data.user_record.time_eye,
+          noseTime: data.data.user_record.time_nose,
+          unfocusedTime: data.data.user_record.time_unfocused,
+          pauseTime: data.data.user_record.time_paused
+        });
+      } catch (error) {
+        console.error('Error fetching user records:', error);
+      }
+    };
+    fetchRecordData();
+  }, []);
+  
 function getDatePositionInArray(dateString: string, today: Date = new Date()): number {
     // Parse the date string manually to avoid timezone issues
     const [year, month, day] = dateString.split('-').map(Number);
@@ -61,11 +98,11 @@ const generateHeatmapData = async ()  =>  {
       const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
       const day = today.getDate().toString().padStart(2, '0');
       const todayIsoDateString = `${year}-${month}-${day}`;
-      console.log(todayIsoDateString); // Example output: "2025-11-04"
+      //console.log(todayIsoDateString); // Example output: "2025-11-04"
 
       const lastYear = today.getFullYear() - 1;
       const lastYearIsoDateString = `${lastYear}-${month}-${day}`;
-      console.log(lastYearIsoDateString);
+      //console.log(lastYearIsoDateString);
       const response = await fetch('http://localhost:5001/api/get-sessions-from-date/' + user.userId + '/' + lastYearIsoDateString + '/' + todayIsoDateString)
       if(!response.ok) {
           console.error('Server error:', response.status, response.statusText);
@@ -75,7 +112,7 @@ const generateHeatmapData = async ()  =>  {
       const activity = new Array(365).fill(0);
       for (let i = 0; i < sessionData.data.sessions.length; i++) {
         activity[getDatePositionInArray(sessionData.data.sessions[i].date)] += sessionData.data.sessions[i].total_hours;
-        console.log( getDatePositionInArray(sessionData.data.sessions[i].date), 'Total Hours:', sessionData.data.sessions[i].total_hours);
+        //console.log( getDatePositionInArray(sessionData.data.sessions[i].date), 'Total Hours:', sessionData.data.sessions[i].total_hours);
       }
       const data = new Array(365);
       for (let i = 364; i >= 0; i--) {
@@ -196,7 +233,7 @@ const generateHeatmapData = async ()  =>  {
   ];
 
   // Monthly graph data
-  const monthlyGraphData = [
+  /*const monthlyGraphData = [
     { month: 'Jan', total_hours: 24, intervals: 45, time_hair: 3.2, time_nail: 2.1, time_eye: 4.5, time_nose: 1.8, time_unfocused: 5.2, time_paused: 3.2 },
     { month: 'Feb', total_hours: 28, intervals: 52, time_hair: 3.8, time_nail: 2.5, time_eye: 5.1, time_nose: 2.2, time_unfocused: 6.1, time_paused: 4.3 },
     { month: 'Mar', total_hours: 32, intervals: 58, time_hair: 4.2, time_nail: 2.8, time_eye: 5.8, time_nose: 2.5, time_unfocused: 6.8, time_paused: 5.1 },
@@ -209,7 +246,7 @@ const generateHeatmapData = async ()  =>  {
     { month: 'Oct', total_hours: 39, intervals: 70, time_hair: 5.0, time_nail: 3.5, time_eye: 7.0, time_nose: 3.2, time_unfocused: 8.0, time_paused: 6.3 },
     { month: 'Nov', total_hours: 41, intervals: 73, time_hair: 5.2, time_nail: 3.7, time_eye: 7.3, time_nose: 3.4, time_unfocused: 8.3, time_paused: 6.7 },
     { month: 'Dec', total_hours: 37, intervals: 66, time_hair: 4.7, time_nail: 3.3, time_eye: 6.6, time_nose: 3.0, time_unfocused: 7.6, time_paused: 6.0 },
-  ];
+  ];*/
 
   // Metrics configuration
   const metricsConfig = {
@@ -228,20 +265,20 @@ const generateHeatmapData = async ()  =>  {
     {
       title: 'All Time Metrics',
       stats: [
-        { label: 'Total Sessions', value: '156', color: 'from-blue-50 to-blue-100', textColor: 'text-blue-600' },
-        { label: 'Total Hours', value: '234h', color: 'from-purple-50 to-purple-100', textColor: 'text-purple-600' },
-        { label: 'Total Intervals', value: '842', color: 'from-indigo-50 to-indigo-100', textColor: 'text-indigo-600' },
-        { label: 'Hair Time', value: '52.3h', color: 'from-pink-50 to-pink-100', textColor: 'text-pink-600' },
-        { label: 'Nail Time', value: '38.7h', color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
+        { label: 'Total Sessions', value: recordData.totalSessions, color: 'from-blue-50 to-blue-100', textColor: 'text-blue-600' },
+        { label: 'Total Hours', value: recordData.totalHours, color: 'from-purple-50 to-purple-100', textColor: 'text-purple-600' },
+        { label: 'Total Intervals', value: recordData.totalIntervals, color: 'from-indigo-50 to-indigo-100', textColor: 'text-indigo-600' },
+        { label: 'Hair Time (h)', value: recordData.hairTime, color: 'from-pink-50 to-pink-100', textColor: 'text-pink-600' },
+        { label: 'Nail Time (h)', value: recordData.nailTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
       ]
     },
     {
       title: 'All Time Metrics',
       stats: [
-        { label: 'Eye Time', value: '38.7h', color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
-        { label: 'Nose Time', value: '74.8h', color: 'from-green-50 to-green-100', textColor: 'text-green-600' },
-        { label: 'Unfocused Time', value: '32.5h', color: 'from-cyan-50 to-cyan-100', textColor: 'text-cyan-600' },
-        { label: 'Pause Time', value: '87.2h', color: 'from-red-50 to-red-100', textColor: 'text-red-600' },
+        { label: 'Eye Time (h)', value: recordData.eyeTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
+        { label: 'Nose Time (h)', value: recordData.noseTime, color: 'from-green-50 to-green-100', textColor: 'text-green-600' },
+        { label: 'Unfocused Time (h)', value: recordData.unfocusedTime, color: 'from-cyan-50 to-cyan-100', textColor: 'text-cyan-600' },
+        { label: 'Pause Time (h)', value: recordData.pauseTime, color: 'from-red-50 to-red-100', textColor: 'text-red-600' },
       ]
     },
   ];
