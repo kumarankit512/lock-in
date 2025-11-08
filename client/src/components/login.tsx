@@ -1,10 +1,14 @@
 import { useState } from 'react';
 
-export default function AuthPage() {
+interface AuthPageProps {
+  setIsAuthenticated: (value: boolean) => void;
+}
+
+export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [apiError, setApiError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
@@ -13,12 +17,12 @@ export default function AuthPage() {
     username: ''
   });
 
-  const validateEmail = (email) => {
+  const validateEmail = (email: string) => {
     const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return pattern.test(email);
   };
 
-  const validatePassword = (password) => {
+  const validatePassword = (password: string) => {
     if (password.length < 8) {
       return { valid: false, message: "Password must be at least 8 characters long" };
     }
@@ -34,7 +38,7 @@ export default function AuthPage() {
     return { valid: true, message: "" };
   };
 
-  const validateUsername = (username) => {
+  const validateUsername = (username: string) => {
     if (username.length < 3) {
       return { valid: false, message: "Username must be at least 3 characters long" };
     }
@@ -48,7 +52,7 @@ export default function AuthPage() {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: {[key: string]: string} = {};
 
     // Email validation
     if (!formData.email) {
@@ -91,7 +95,7 @@ export default function AuthPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError('');
     
@@ -121,6 +125,15 @@ export default function AuthPage() {
         }
         
         console.log('Success:', data);
+        
+        console.log('userid:', data.data.user.id);
+        console.log('username:', data.data.user.username);
+
+        // Store user data and authenticate
+        localStorage.setItem('token', data.token || 'dummy-token');
+        localStorage.setItem('user', JSON.stringify({ userId: data.data.user.id, username: data.data.user.username, email: formData.email }));
+        setIsAuthenticated(true);
+        
       } else {
         console.log('Signing up:', formData);
         const response = await fetch('http://localhost:5001/api/signup', {
@@ -143,6 +156,14 @@ export default function AuthPage() {
         }
         
         console.log('Success:', data);
+        
+        console.log('userid:', data.user.id);
+        console.log('username:', data.user.username);
+        
+        // Store user data and authenticate
+        localStorage.setItem('token', data.token || 'dummy-token');
+        localStorage.setItem('user', JSON.stringify({ userId: data.data.user.id, username: data.data.user.username, email: formData.email }));
+        setIsAuthenticated(true);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -150,7 +171,7 @@ export default function AuthPage() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,

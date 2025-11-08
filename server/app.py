@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models.User import User
 from models.AuthToken import AuthToken
+from models.Session import Session
 from utils import validate_email, validate_password, validate_username, create_response
 from bson import ObjectId
 import json
@@ -9,6 +10,10 @@ from config import Config
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 import sys
+from datetime import datetime, timedelta
+from models.Record import Record
+import bcrypt
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -58,8 +63,21 @@ def signup():
         new_user = User(username=username, email=email, password_hash=password_hash)
         new_user.save()
 
-        # Generate JWT token
-        token = AuthToken.generate_token(new_user._id)
+        # Create associated record
+        new_record = Record(
+            user_id=new_user._id,
+            username=new_user.username,
+            total_sessions=0,
+            total_intervals=0,
+            total_hours=0,
+            time_hair=0,
+            time_nail=0,
+            time_eye=0,
+            time_nose=0,
+            time_unfocused=0,
+            time_paused=0
+        )
+        new_record.save()
 
         user_data = {
             'id': str(new_user._id),
@@ -70,7 +88,7 @@ def signup():
         return create_response(
             True, 
             "User created successfully", 
-            {'user': user_data, 'token': token}, 
+            {'user': user_data}, 
             status_code=201
         )
     except Exception as e:
@@ -106,7 +124,7 @@ def login():
         return create_response(
             True, 
             "Login successful", 
-            {'user': user_data, 'token': token}
+            {'user': user_data}
         )
     except Exception as e:
         return create_response(False, f"An error occurred: {str(e)}", status_code=500)
@@ -138,6 +156,115 @@ def verify_token():
         
     except Exception as e:
         return create_response(False, f"An error occurred: {str(e)}", status_code=500)
+    
+
+#Create Session Endpoint
+@app.route('/api/create-session', methods=['POST'])
+def create_session():
+    try:
+        data = request.get_json()
+        required_fields = [
+            'user_id', 'username', 'date', 'time_started', 'total_hours',
+            'intervals', 'time_per_interval', 'time_hair', 'time_nail',
+            'time_eye', 'time_nose', 'time_unfocused', 'time_paused'
+        ]
+        for field in required_fields:
+            if field not in data:
+                return create_response(False, f"{field} is required", status_code=400)
+        #Check if user exists
+        if data['user_id'] and not User.find_by_id(data['user_id']):
+            return create_response(False, "User not found", status_code=404)
+        new_session = Session.from_dict(data)
+        new_session.save()
+
+        # Update user record
+        user_record = Record.find_by_user_id(data['user_id'])
+        print("user_record:", user_record)
+        if user_record:
+            user_record.increment_sessions(
+                hours=data['total_hours'],
+                intervals=data['intervals'],
+                time_hair=data['time_hair'],
+                time_nail=data['time_nail'],
+                time_eye=data['time_eye'],
+                time_nose=data['time_nose'],
+                time_unfocused=data['time_unfocused'],
+                time_paused=data['time_paused']
+            )
+        
+        return create_response(True, "Session created successfully", {'session_id': str(new_session._id)}, status_code=201)
+
+    except Exception as e:
+        return create_response(False, f"An error occurred: {str(e)}", status_code=500)     
+
+#Get sessions of a user
+@app.route('/api/get-sessions/<user_id>', methods=['GET'])
+def get_sessions(user_id):
+    try:
+        if not User.find_by_id(user_id=user_id):
+            return create_response(False, "User not found", status_code=404)
+        sessions = Session.get_recent_sessions(user_id=user_id, limit=10)
+        return create_response(True, "Sessions retrieved successfully", {'sessions': [session.to_dict() for session in sessions]})
+
+    except Exception as e:
+        return create_response(False, f"An error occurred: {str(e)}", status_code=500)
+
+#Get specific session by id
+@app.route('/api/get-session/<session_id>', methods=['GET'])
+def get_session(session_id):
+    try:
+        session = Session.find_by_id(session_id)
+        if not session:
+            return create_response(False, "Session not found", status_code=404)
+        return create_response(True, "Session retrieved successfully", {'session': session.to_dict()})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
+
+#Get sessions from date range
+@app.route('/api/get-sessions-from-date/<user_id>/<start_date>/<end_date>', methods=['GET'])
+def get_sessions_from_date(user_id, start_date, end_date):
+    try:
+        if not user_id or not start_date or not end_date:
+            return create_response(False, "user_id, start_date and end_date are required", status_code=400)
+
+        if not User.find_by_id(user_id=user_id):
+            return create_response(False, "User not found", status_code=404)
+
+        # Validate date formats
+        try:
+            datetime.strptime(start_date, '%Y-%m-%d')
+            datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return create_response(False, "Dates must be in YYYY-MM-DD format", status_code=400)
+
+        # Validate start_date <= end_date
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        end = datetime.strptime(end_date, '%Y-%m-%d')
+        if start > end:
+            return create_response(False, "start_date cannot be after end_date", status_code=400)
+
+        sessions = Session.get_user_sessions_in_date_range(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        return create_response(True, "Sessions retrieved successfully", {'sessions': [session.to_dict() for session in sessions]})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
+
+@app.route('/api/get-record/<user_id>', methods=['GET'])
+def get_record(user_id):
+    try:
+        record = Record.find_by_user_id(user_id=user_id)
+        if not record:
+            return create_response(False, "User not found", status_code=404)
+
+        return create_response(True, "User record retrieved successfully", {'user_record': record.to_dict()})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
 
 @app.route('/')
 def home():
