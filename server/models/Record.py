@@ -7,8 +7,23 @@ client = MongoClient(Config.MONGO_URI)
 db = client.get_database("level_up")
 records_collection = db.records
 
+
 class Record:
-    def __init__(self, user_id, username, total_sessions, total_hours, total_intervals, time_hair, time_nail, time_eye, time_nose, time_unfocused, time_paused, _id=None):
+    def __init__(
+        self,
+        user_id,
+        username,
+        total_sessions,
+        total_hours,
+        total_intervals,
+        time_hair,
+        time_nail,
+        time_eye,
+        time_nose,
+        time_unfocused,
+        time_paused,
+        _id=None
+    ):
         self.user_id = user_id
         self.username = username
         self.total_sessions = total_sessions
@@ -40,18 +55,25 @@ class Record:
         )
 
     def to_dict(self):
+        # Helper to clean up float formatting
+        def clean_float(value):
+            if isinstance(value, float):
+                # Round to 2 decimal places and remove binary float artifacts
+                return float(f"{round(value, 2):.2f}")
+            return value
+
         return {
             'user_id': str(self.user_id),
             'username': self.username,
             'total_sessions': self.total_sessions,
-            'total_hours': self.total_hours,
+            'total_hours': clean_float(self.total_hours),
             'total_intervals': self.total_intervals,
-            'time_hair': self.time_hair,
-            'time_nail': self.time_nail,
-            'time_eye': self.time_eye,
-            'time_nose': self.time_nose,
-            'time_unfocused': self.time_unfocused,
-            'time_paused': self.time_paused
+            'time_hair': clean_float(self.time_hair),
+            'time_nail': clean_float(self.time_nail),
+            'time_eye': clean_float(self.time_eye),
+            'time_nose': clean_float(self.time_nose),
+            'time_unfocused': clean_float(self.time_unfocused),
+            'time_paused': clean_float(self.time_paused)
         }
 
     def save(self):
@@ -82,16 +104,25 @@ class Record:
             return cls.from_dict(data)
         return None
 
-    def increment_sessions(self, hours, intervals, time_hair, time_nail, time_eye, time_nose, time_unfocused, time_paused):
+    def increment_sessions(
+        self,
+        hours,
+        intervals,
+        time_hair,
+        time_nail,
+        time_eye,
+        time_nose,
+        time_unfocused,
+        time_paused
+    ):
         self.total_sessions += 1
         self.total_hours += hours
         self.total_intervals += intervals
-        self.time_hair += time_hair
-        self.time_nail += time_nail
-        self.time_eye += time_eye
-        self.time_nose += time_nose
-        self.time_unfocused += time_unfocused
-        self.time_paused += time_paused
+        self.time_hair += round((time_hair / 3600), 2)
+        self.time_nail += round((time_nail / 3600), 2)
+        self.time_eye += round((time_eye / 3600), 2)
+        self.time_nose += round((time_nose / 3600), 2)
+        self.time_unfocused += round((time_unfocused / 3600), 2)
+        self.time_paused += round((time_paused / 3600), 2)
         self.update()
         return self
-
