@@ -1,17 +1,16 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import FocusAndHabits from './components/FocusAndHabits'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AuthPage from './components/login';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <FocusAndHabits/>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<AuthPage />} />
+        {/* Add other routes here */}
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
