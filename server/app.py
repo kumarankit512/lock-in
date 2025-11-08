@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models.User import User
 from models.AuthToken import AuthToken
+from models.Session import Session
 from utils import validate_email, validate_password, validate_username, create_response
 from bson import ObjectId
 import json
@@ -138,6 +139,30 @@ def verify_token():
         
     except Exception as e:
         return create_response(False, f"An error occurred: {str(e)}", status_code=500)
+    
+
+#Create Session Endpoint
+@app.route('/api/create-session', methods=['POST'])
+def create_session():
+    try:
+        data = request.get_json()
+        required_fields = [
+            'user_id', 'username', 'date', 'time_started', 'total_hours',
+            'intervals', 'time_per_interval', 'time_hair', 'time_nail',
+            'time_eye', 'time_nose', 'time_unfocused', 'time_paused'
+        ]
+        for field in required_fields:
+            if field not in data:
+                return create_response(False, f"{field} is required", status_code=400)
+        #Check if user exists
+        if data['user_id'] and not User.find_by_id(data['user_id']):
+            return create_response(False, "User not found", status_code=404)
+        new_session = Session.from_dict(data)
+        new_session.save()
+        return create_response(True, "Session created successfully", {'session_id': str(new_session._id)}, status_code=201)
+
+    except Exception as e:
+        return create_response(False, f"An error occurred: {str(e)}", status_code=500)     
 
 @app.route('/')
 def home():

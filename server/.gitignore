@@ -1,6 +1,4 @@
 venv/
 .env
-models/__pycache__/AuthToken.cpython-312.pyc
-__pycache__/config.cpython-312.pyc
-__pycache__/utils.cpython-312.pyc
-models/__pycache__/User.cpython-312.pyc
+.venv/
+*.pyc
