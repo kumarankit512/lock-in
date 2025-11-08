@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, Clock, Code, TrendingUp, Settings, ChevronDown, ChevronUp, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -12,35 +12,94 @@ export default function ProfileDashboard() {
     newPassword: '',
     confirmPassword: ''
   });
-
+  const [heatmapData, setHeatmapData] = useState([]);
   // Mock user data
   const userData = {
-    username: 'john_doe',
-    email: 'john.doe@example.com',
-    joinDate: 'January 2024',
-    totalSessions: 156,
-    totalHours: 234,
-    currentStreak: 12,
-    longestStreak: 28
+    username: '',
+    email: '',
+    joinDate: '',
+    totalSessions: 0,
+    totalHours: 0,
+    currentStreak: 0,
+    longestStreak: 0
   };
+
+function getDatePositionInArray(dateString: string, today: Date = new Date()): number {
+    // Parse the date string manually to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const targetDate = new Date(Date.UTC(year, month - 1, day));
+
+    // Validate dates
+    if (isNaN(targetDate.getTime())) {
+        throw new Error('Invalid target date');
+    }
+    if (isNaN(today.getTime())) {
+        throw new Error('Invalid today date');
+    }
+
+    // Set both dates to start of day for accurate comparison
+    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+    const diffTime = targetDate.getTime() - todayUTC.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Position in array (today is index 364)
+    const position = 364 + diffDays;
+
+    return position;
+}
 
   // Generate heatmap data
-  const generateHeatmapData = () => {
-    const data = [];
-    const today = new Date();
-    for (let i = 364; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const activity = Math.floor(Math.random() * 5);
-      data.push({
-        date: date.toISOString().split('T')[0],
-        count: activity
-      });
-    }
-    return data;
-  };
+const generateHeatmapData = async ()  =>  {
+    try {
+      const user = JSON.parse(localStorage.getItem?.('user') || '{}');
+      //{"userId":"690912e9370da3b01c281d0b","username":"BobbyT","email":"someone@gmail.com"}
+      console.log(user);
+      const today = new Date();
+      //console.log(today);
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+      const day = today.getDate().toString().padStart(2, '0');
+      const todayIsoDateString = `${year}-${month}-${day}`;
+      console.log(todayIsoDateString); // Example output: "2025-11-04"
 
-  const heatmapData = generateHeatmapData();
+      const lastYear = today.getFullYear() - 1;
+      const lastYearIsoDateString = `${lastYear}-${month}-${day}`;
+      console.log(lastYearIsoDateString);
+      const response = await fetch('http://localhost:5001/api/get-sessions-from-date/' + user.userId + '/' + lastYearIsoDateString + '/' + todayIsoDateString)
+      if(!response.ok) {
+          console.error('Server error:', response.status, response.statusText);
+          return;
+      }
+      const sessionData = await response.json();
+      const activity = new Array(365).fill(0);
+      for (let i = 0; i < sessionData.data.sessions.length; i++) {
+        activity[getDatePositionInArray(sessionData.data.sessions[i].date)] += sessionData.data.sessions[i].total_hours;
+        console.log( getDatePositionInArray(sessionData.data.sessions[i].date), 'Total Hours:', sessionData.data.sessions[i].total_hours);
+      }
+      const data = new Array(365);
+      for (let i = 364; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        data[364 - i] = ({
+          date: date.toISOString().split('T')[0],
+          count: activity[364-i]
+        });
+      }
+      return data;
+    }
+    catch (error){
+        console.error('Error fetching the session data for the heatmap', error);
+  };
+}
+
+  useEffect(() => {
+  const fetchHeatmapData = async () => {
+    const data = await generateHeatmapData();
+    setHeatmapData(data);
+  };
+  fetchHeatmapData();
+}, []);
 
   // Recent sessions
   const recentSessions = [
@@ -189,9 +248,9 @@ export default function ProfileDashboard() {
 
   const getHeatmapColor = (count) => {
     if (count === 0) return 'bg-gray-100';
-    if (count === 1) return 'bg-green-200';
-    if (count === 2) return 'bg-green-400';
-    if (count === 3) return 'bg-green-600';
+    if (count <= 1) return 'bg-green-200';
+    if (count <= 3) return 'bg-green-400';
+    if (count <= 5) return 'bg-green-600';
     return 'bg-green-800';
   };
 
@@ -207,7 +266,10 @@ export default function ProfileDashboard() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     console.log('Logging out...');
+    window.location.href = '/login';
   };
 
   const nextStatView = () => {
@@ -354,7 +416,7 @@ export default function ProfileDashboard() {
                             <div
                               key={dayIndex}
                               className={`w-3 h-3 rounded-sm ${dayData ? getHeatmapColor(dayData.count) : 'bg-gray-100'}`}
-                              title={dayData ? `${dayData.date}: ${dayData.count} sessions` : ''}
+                              title={dayData ? `${dayData.date}: ${dayData.count} hours` : ''}
                             />
                           );
                         })}

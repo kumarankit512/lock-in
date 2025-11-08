@@ -126,9 +126,12 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
         
         console.log('Success:', data);
         
+        console.log('userid:', data.data.user.id);
+        console.log('username:', data.data.user.username);
+
         // Store user data and authenticate
         localStorage.setItem('token', data.token || 'dummy-token');
-        localStorage.setItem('user', JSON.stringify(data.user || { email: formData.email, username: formData.email.split('@')[0] }));
+        localStorage.setItem('user', JSON.stringify({ userId: data.data.user.id, username: data.data.user.username, email: formData.email }));
         setIsAuthenticated(true);
         
       } else {
@@ -154,9 +157,12 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
         
         console.log('Success:', data);
         
+        console.log('userid:', data.user.id);
+        console.log('username:', data.user.username);
+        
         // Store user data and authenticate
         localStorage.setItem('token', data.token || 'dummy-token');
-        localStorage.setItem('user', JSON.stringify(data.user || { username: formData.username, email: formData.email }));
+        localStorage.setItem('user', JSON.stringify({ userId: data.data.user.id, username: data.data.user.username, email: formData.email }));
         setIsAuthenticated(true);
       }
     } catch (error) {
