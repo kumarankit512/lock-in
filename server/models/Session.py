@@ -105,7 +105,7 @@ class Session:
         return [cls.from_dict(record) for record in records]
 
     @classmethod
-    def get_recent_sessions(cls, user_id, limit=10):
+    def get_recent_sessions(cls, user_id, limit):
         records = sessions_collection.find({'user_id': user_id})\
                                 .sort('date', -1)\
                                 .limit(limit)

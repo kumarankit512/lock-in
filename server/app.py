@@ -10,6 +10,7 @@ from config import Config
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 import sys
+from datetime import datetime, timedelta
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -163,6 +164,63 @@ def create_session():
 
     except Exception as e:
         return create_response(False, f"An error occurred: {str(e)}", status_code=500)     
+
+#Get sessions of a user
+@app.route('/api/get-sessions/<user_id>', methods=['GET'])
+def get_sessions(user_id):
+    try:
+        if not User.find_by_id(user_id=user_id):
+            return create_response(False, "User not found", status_code=404)
+        sessions = Session.get_recent_sessions(user_id=user_id, limit=10)
+        return create_response(True, "Sessions retrieved successfully", {'sessions': [session.to_dict() for session in sessions]})
+
+    except Exception as e:
+        return create_response(False, f"An error occurred: {str(e)}", status_code=500)
+
+#Get specific session by id
+@app.route('/api/get-session/<session_id>', methods=['GET'])
+def get_session(session_id):
+    try:
+        session = Session.find_by_id(session_id)
+        if not session:
+            return create_response(False, "Session not found", status_code=404)
+        return create_response(True, "Session retrieved successfully", {'session': session.to_dict()})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
+
+#Get sessions from date range
+@app.route('/api/get-sessions-from-date/<user_id>/<start_date>/<end_date>', methods=['GET'])
+def get_sessions_from_date(user_id, start_date, end_date):
+    try:
+        if not user_id or not start_date or not end_date:
+            return create_response(False, "user_id, start_date and end_date are required", status_code=400)
+
+        if not User.find_by_id(user_id=user_id):
+            return create_response(False, "User not found", status_code=404)
+
+        # Validate date formats
+        try:
+            datetime.strptime(start_date, '%Y-%m-%d')
+            datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return create_response(False, "Dates must be in YYYY-MM-DD format", status_code=400)
+
+        # Validate start_date <= end_date
+        start = datetime.strptime(start_date, '%Y-%m-%d')
+        end = datetime.strptime(end_date, '%Y-%m-%d')
+        if start > end:
+            return create_response(False, "start_date cannot be after end_date", status_code=400)
+
+        sessions = Session.get_user_sessions_in_date_range(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        return create_response(True, "Sessions retrieved successfully", {'sessions': [session.to_dict() for session in sessions]})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
 
 @app.route('/')
 def home():
