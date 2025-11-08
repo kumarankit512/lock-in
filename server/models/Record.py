@@ -62,7 +62,7 @@ class Record:
 
     @classmethod
     def find_by_user_id(cls, user_id):
-        data = records_collection.find_one({"user_id": ObjectId(user_id)})
+        data = records_collection.find_one({"user_id": user_id})
         if data:
             return cls.from_dict(data)
         return None
