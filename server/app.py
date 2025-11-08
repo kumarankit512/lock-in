@@ -11,6 +11,9 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 import sys
 from datetime import datetime, timedelta
+from models.Record import Record
+import bcrypt
+
 
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -60,8 +63,21 @@ def signup():
         new_user = User(username=username, email=email, password_hash=password_hash)
         new_user.save()
 
-        # Generate JWT token
-        token = AuthToken.generate_token(new_user._id)
+        # Create associated record
+        new_record = Record(
+            user_id=new_user._id,
+            username=new_user.username,
+            total_sessions=0,
+            total_intervals=0,
+            total_hours=0,
+            time_hair=0,
+            time_nail=0,
+            time_eye=0,
+            time_nose=0,
+            time_unfocused=0,
+            time_paused=0
+        )
+        new_record.save()
 
         user_data = {
             'id': str(new_user._id),
@@ -72,7 +88,7 @@ def signup():
         return create_response(
             True, 
             "User created successfully", 
-            {'user': user_data, 'token': token}, 
+            {'user': user_data}, 
             status_code=201
         )
     except Exception as e:
@@ -108,7 +124,7 @@ def login():
         return create_response(
             True, 
             "Login successful", 
-            {'user': user_data, 'token': token}
+            {'user': user_data}
         )
     except Exception as e:
         return create_response(False, f"An error occurred: {str(e)}", status_code=500)
@@ -160,6 +176,22 @@ def create_session():
             return create_response(False, "User not found", status_code=404)
         new_session = Session.from_dict(data)
         new_session.save()
+
+        # Update user record
+        user_record = Record.find_by_user_id(data['user_id'])
+        print("user_record:", user_record)
+        if user_record:
+            user_record.increment_sessions(
+                hours=data['total_hours'],
+                intervals=data['intervals'],
+                time_hair=data['time_hair'],
+                time_nail=data['time_nail'],
+                time_eye=data['time_eye'],
+                time_nose=data['time_nose'],
+                time_unfocused=data['time_unfocused'],
+                time_paused=data['time_paused']
+            )
+        
         return create_response(True, "Session created successfully", {'session_id': str(new_session._id)}, status_code=201)
 
     except Exception as e:
@@ -218,6 +250,18 @@ def get_sessions_from_date(user_id, start_date, end_date):
             end_date=end_date
         )
         return create_response(True, "Sessions retrieved successfully", {'sessions': [session.to_dict() for session in sessions]})
+
+    except Exception as e:
+        return create_response(False, f'An error occurred: {str(e)}', status_code=500)
+
+@app.route('/api/get-record/<user_id>', methods=['GET'])
+def get_record(user_id):
+    try:
+        record = Record.find_by_user_id(user_id=user_id)
+        if not record:
+            return create_response(False, "User not found", status_code=404)
+
+        return create_response(True, "User record retrieved successfully", {'user_record': record.to_dict()})
 
     except Exception as e:
         return create_response(False, f'An error occurred: {str(e)}', status_code=500)
