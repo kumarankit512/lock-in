@@ -17,9 +17,11 @@ export default function ProfileDashboard() {
 
   // Mock user data
   const userData = {
-    username: '',
-    email: ''
-  };
+    username: JSON.parse(localStorage.getItem('user')).username,
+    email: JSON.parse(localStorage.getItem('user')).email,
+    };
+  
+    const [recentSessions, setRecentSessions] = useState([]);
 
     const [recordData, setRecordData] = useState({
     totalSessions: 0,
@@ -35,6 +37,22 @@ export default function ProfileDashboard() {
 
 
   const [monthlyGraphData, setMonthlyGraphData] = useState([]);
+
+//Fetch 10 most recent sessions
+const fetchRecentSessions = async () => {
+try {
+  const response = await fetch('http://localhost:5001/api/get-sessions/' + JSON.parse(localStorage.getItem('user')).userId);
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+
+  const data = await response.json();
+  setRecentSessions(data.data.sessions);
+} catch (error) {
+  console.error('Error fetching recent sessions:', error);
+}
+};
+
 
 // Create monthly graph data as array
 const createMonthlyGraphData = () => {
@@ -95,22 +113,22 @@ setMonthlyGraphData(prevData => {
       const existingIndex = updatedData.findIndex(item => 
         item.year === sessionYear && item.monthIndex === sessionMonth
       );
-
+      //console.log('old time_nose: ', updatedData[existingIndex]?.time_nose, ' new time_nose:', parseFloat(((session.time_nose) / 60).toFixed(2)));
       if (existingIndex !== -1) {
         // Update existing month data
         updatedData[existingIndex] = {
           ...updatedData[existingIndex],
           total_hours: updatedData[existingIndex].total_hours + (session.total_hours || 0),
           intervals: updatedData[existingIndex].intervals + (session.intervals || 0),
-          time_hair: updatedData[existingIndex].time_hair + parseFloat(((session.time_hair || 0) / 60).toFixed(2)), // seconds to minutes
-          time_nail: updatedData[existingIndex].time_nail + parseFloat(((session.time_nail || 0) / 60).toFixed(2)), // seconds to minutes
-          time_eye: updatedData[existingIndex].time_eye + parseFloat(((session.time_eye || 0) / 60).toFixed(2)), // seconds to minutes
-          time_nose: updatedData[existingIndex].time_nose + parseFloat(((session.time_nose || 0) / 60).toFixed(2)), // seconds to minutes
-          time_unfocused: updatedData[existingIndex].time_unfocused + parseFloat(((session.time_unfocused || 0) / 60).toFixed(2)), // seconds to minutes
-          time_paused: updatedData[existingIndex].time_paused + parseFloat(((session.time_paused || 0) / 60).toFixed(2)) // seconds to minutes
-        };
+          time_hair: parseFloat((updatedData[existingIndex].time_hair + ((session.time_hair || 0) / 60)).toFixed(2)),
+          time_nail: parseFloat((updatedData[existingIndex].time_nail + ((session.time_nail || 0) / 60)).toFixed(2)),
+          time_eye: parseFloat((updatedData[existingIndex].time_eye + ((session.time_eye || 0) / 60)).toFixed(2)),
+          time_nose: parseFloat((updatedData[existingIndex].time_nose + ((session.time_nose || 0) / 60)).toFixed(2)),
+          time_unfocused: parseFloat((updatedData[existingIndex].time_unfocused + ((session.time_unfocused || 0) / 60)).toFixed(2)),
+          time_paused: parseFloat((updatedData[existingIndex].time_paused + ((session.time_paused || 0) / 60)).toFixed(2))
       }
-    });
+    }}
+  );
 
     return updatedData;
   });
@@ -199,7 +217,8 @@ const generateHeatmapData = async () => {
     // Use the data directly from the API response, not from state
     const activity = new Array(365).fill(0);
     for (let i = 0; i < sessionsDataFromAPI.length; i++) {
-      activity[getDatePositionInArray(sessionsDataFromAPI[i].date)] += sessionsDataFromAPI[i].total_hours;
+      activity[getDatePositionInArray(sessionsDataFromAPI[i].date)] =  parseFloat((activity[getDatePositionInArray(sessionsDataFromAPI[i].date)] 
+      + sessionsDataFromAPI[i].total_hours).toFixed(2));
     }
 
     const heatmapData = new Array(365);
@@ -223,6 +242,9 @@ const generateHeatmapData = async () => {
 useEffect(() => {
   const initializeData = async () => {
     try {
+      // Fetch recent sessions
+      await fetchRecentSessions();
+
       // Get both datasets from generateHeatmapData
       const { heatmapData: newHeatmapData, sessionsData: newSessionsData } = await generateHeatmapData();
 
@@ -249,108 +271,14 @@ useEffect(() => {
   initializeData();
 }, []);
 
-  // Recent sessions
-  const recentSessions = [
-    {
-      id: 1,
-      date: '2024-11-02',
-      duration: '2h 30m',
-      problemsSolved: 5,
-      topics: ['Arrays', 'Dynamic Programming'],
-      difficulty: 'Medium',
-      notes: 'Focused on DP patterns'
-    },
-    {
-      id: 2,
-      date: '2024-11-01',
-      duration: '1h 45m',
-      problemsSolved: 3,
-      topics: ['Trees', 'Recursion'],
-      difficulty: 'Hard',
-      notes: 'Binary tree traversal'
-    },
-    {
-      id: 3,
-      date: '2024-10-31',
-      duration: '3h 15m',
-      problemsSolved: 7,
-      topics: ['Graphs', 'BFS'],
-      difficulty: 'Medium',
-      notes: 'Graph algorithms practice'
-    },
-    {
-      id: 4,
-      date: '2024-10-30',
-      duration: '2h 00m',
-      problemsSolved: 4,
-      topics: ['Strings', 'Hash Maps'],
-      difficulty: 'Easy',
-      notes: 'Interview prep'
-    },
-    {
-      id: 5,
-      date: '2024-10-29',
-      duration: '1h 30m',
-      problemsSolved: 2,
-      topics: ['Linked Lists'],
-      difficulty: 'Medium',
-      notes: 'Two-pointer technique'
-    },
-    {
-      id: 6,
-      date: '2024-10-28',
-      duration: '2h 15m',
-      problemsSolved: 6,
-      topics: ['Backtracking', 'Recursion'],
-      difficulty: 'Hard',
-      notes: 'Permutations and combinations'
-    },
-    {
-      id: 7,
-      date: '2024-10-27',
-      duration: '1h 20m',
-      problemsSolved: 3,
-      topics: ['Sorting', 'Arrays'],
-      difficulty: 'Easy',
-      notes: 'Quick sort implementation'
-    },
-    {
-      id: 8,
-      date: '2024-10-26',
-      duration: '2h 45m',
-      problemsSolved: 5,
-      topics: ['Dynamic Programming', 'Strings'],
-      difficulty: 'Medium',
-      notes: 'Longest common subsequence'
-    },
-    {
-      id: 9,
-      date: '2024-10-25',
-      duration: '1h 55m',
-      problemsSolved: 4,
-      topics: ['Binary Search', 'Arrays'],
-      difficulty: 'Medium',
-      notes: 'Search in rotated array'
-    },
-    {
-      id: 10,
-      date: '2024-10-24',
-      duration: '3h 00m',
-      problemsSolved: 8,
-      topics: ['Graphs', 'DFS', 'BFS'],
-      difficulty: 'Hard',
-      notes: 'Complex graph traversal problems'
-    },
-  ];
-
   // Metrics configuration
   const metricsConfig = {
-    total_hours: { label: 'Total Hours', color: '#3b82f6', unit: 'h' },
+    total_hours: { label: 'Total Hours Studied', color: '#3b82f6', unit: 'h' },
     intervals: { label: 'Intervals', color: '#8b5cf6', unit: '' },
-    time_hair: { label: 'Hair Time', color: '#ec4899', unit: 'm' },
-    time_nail: { label: 'Nail Time', color: '#f59e0b', unit: 'm' },
-    time_eye: { label: 'Eye Time', color: '#10b981', unit: 'm' },
-    time_nose: { label: 'Nose Time', color: '#06b6d4', unit: 'm' },
+    time_hair: { label: 'Hair Touch', color: '#ec4899', unit: 'm' },
+    time_nail: { label: 'Nail Bite', color: '#f59e0b', unit: 'm' },
+    time_eye: { label: 'Eye Rub', color: '#10b981', unit: 'm' },
+    time_nose: { label: 'Nose Touch', color: '#06b6d4', unit: 'm' },
     time_unfocused: { label: 'Unfocused Time', color: '#ef4444', unit: 'm' },
     time_paused: { label: 'Paused Time', color: '#6366f1', unit: 'm' },
   };
@@ -361,17 +289,17 @@ useEffect(() => {
       title: 'All Time Metrics',
       stats: [
         { label: 'Total Sessions', value: recordData.totalSessions, color: 'from-blue-50 to-blue-100', textColor: 'text-blue-600' },
-        { label: 'Total Hours', value: recordData.totalHours, color: 'from-purple-50 to-purple-100', textColor: 'text-purple-600' },
+        { label: 'Total Hours Studied', value: recordData.totalHours, color: 'from-purple-50 to-purple-100', textColor: 'text-purple-600' },
         { label: 'Total Intervals', value: recordData.totalIntervals, color: 'from-indigo-50 to-indigo-100', textColor: 'text-indigo-600' },
-        { label: 'Hair Time (h)', value: recordData.hairTime, color: 'from-pink-50 to-pink-100', textColor: 'text-pink-600' },
-        { label: 'Nail Time (h)', value: recordData.nailTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
+        { label: 'Hair Touch (h)', value: recordData.hairTime, color: 'from-pink-50 to-pink-100', textColor: 'text-pink-600' },
+        { label: 'Nail Bite (h)', value: recordData.nailTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
       ]
     },
     {
       title: 'All Time Metrics',
       stats: [
-        { label: 'Eye Time (h)', value: recordData.eyeTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
-        { label: 'Nose Time (h)', value: recordData.noseTime, color: 'from-green-50 to-green-100', textColor: 'text-green-600' },
+        { label: 'Eye Rub (h)', value: recordData.eyeTime, color: 'from-orange-50 to-orange-100', textColor: 'text-orange-600' },
+        { label: 'Nose Touch (h)', value: recordData.noseTime, color: 'from-green-50 to-green-100', textColor: 'text-green-600' },
         { label: 'Unfocused Time (h)', value: recordData.unfocusedTime, color: 'from-cyan-50 to-cyan-100', textColor: 'text-cyan-600' },
         { label: 'Pause Time (h)', value: recordData.pauseTime, color: 'from-red-50 to-red-100', textColor: 'text-red-600' },
       ]
@@ -453,12 +381,6 @@ useEffect(() => {
                     {userData.email}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">Member Since</label>
-                  <div className="px-4 py-3 bg-gray-50 rounded-lg text-gray-900">
-                    {userData.joinDate}
-                  </div>
-                </div>
                 <button
                   onClick={() => setShowPasswordModal(true)}
                   className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
@@ -473,53 +395,86 @@ useEffect(() => {
           <div>
             {/* Top 10 Recent Sessions */}
             <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col" style={{ height: '452px' }}>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Top 10 Sessions</h2>
+          ``    <h2 className="text-xl font-semibold text-gray-900 mb-4">Most Recent Sessions</h2>
               <div className="space-y-2 overflow-y-auto flex-1 pr-2">
-                {recentSessions.map((session) => (
-                  <div key={session.id} className="border border-gray-200 rounded-lg">
+                {recentSessions.map((session, index) => (
+                  <div key={session._id || index} className="border border-gray-200 rounded-lg">
                     <button
-                      onClick={() => toggleSession(session.id)}
+                      onClick={() => toggleSession(session._id || index)}
                       className="w-full px-3 py-2 flex items-center justify-between hover:bg-gray-50 transition"
                     >
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <div className="text-left">
-                          <div className="text-sm font-medium text-gray-900">{session.date}</div>
-                          <div className="text-xs text-gray-600">{session.duration}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {session.date} at {session.time_started}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {session.total_hours} hours • {session.intervals} intervals
+                          </div>
                         </div>
                       </div>
-                      {expandedSession === session.id ? (
+                      {expandedSession === (session._id || index) ? (
                         <ChevronUp className="w-4 h-4 text-gray-400" />
                       ) : (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
                       )}
                     </button>
-                    {expandedSession === session.id && (
+                    {expandedSession === (session._id || index) && (
                       <div className="px-3 py-3 border-t border-gray-200 bg-gray-50 space-y-2 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-600">Problems: </span>
-                          <span className="text-gray-900">{session.problemsSolved}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Difficulty: </span>
-                          <span className="text-gray-900">{session.difficulty}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Topics: </span>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {session.topics.map((topic, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
-                              >
-                                {topic}
-                              </span>
-                            ))}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <span className="font-medium text-gray-600">Total Hours: </span>
+                            <span className="text-gray-900">{session.total_hours}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Intervals: </span>
+                            <span className="text-gray-900">{session.intervals}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Time per Interval: </span>
+                            <span className="text-gray-900">{session.time_per_interval} min</span>
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-600">Started: </span>
+                            <span className="text-gray-900">{session.time_started}</span>
                           </div>
                         </div>
-                        <div>
-                          <span className="font-medium text-gray-600">Notes: </span>
-                          <p className="text-gray-900 text-xs mt-1">{session.notes}</p>
+                        
+                        <div className="pt-2">
+                          <span className="font-medium text-gray-600">Focus Time Breakdown (seconds): </span>
+                          <div className="grid grid-cols-2 gap-1 mt-1 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Hair:</span>
+                              <span className="text-gray-900">{session.time_hair}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Nail:</span>
+                              <span className="text-gray-900">{session.time_nail}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Eye:</span>
+                              <span className="text-gray-900">{session.time_eye}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Nose:</span>
+                              <span className="text-gray-900">{session.time_nose}s</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <span className="font-medium text-gray-600">Other Time (seconds): </span>
+                          <div className="grid grid-cols-2 gap-1 mt-1 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Unfocused:</span>
+                              <span className="text-gray-900">{session.time_unfocused}s</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Paused:</span>
+                              <span className="text-gray-900">{session.time_paused}s</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -529,7 +484,6 @@ useEffect(() => {
             </div>
           </div>
         </div>
-
         {/* Full Width Sections */}
         <div className="space-y-6 mt-6">
           {/* GitHub Heatmap - Full Width */}
