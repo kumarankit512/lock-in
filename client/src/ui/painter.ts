@@ -137,6 +137,107 @@ export function resizeCanvasForDPR(canvas: HTMLCanvasElement, cssW: number, cssH
   ctx.imageSmoothingEnabled = true;
   return ctx;
 }
+// --- DEBUG LANDMARK DRAWING ---
+
+// Draw small circles for a set of normalized points (0..1) with the same mirroring
+export function drawPoints(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  pts: Array<{x:number; y:number}>,
+  radius = 2
+) {
+  ctx.beginPath();
+  for (const p of pts) {
+    const x = p.x * W;
+    const y = p.y * H;
+    ctx.moveTo(x + radius, y);
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+  }
+  ctx.fill();
+}
+
+// Lines between pairs of indices (e.g., hand skeleton).
+export function drawConnections(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  pts: Array<{x:number; y:number}>,
+  edges: Array<[number, number]>
+) {
+  ctx.beginPath();
+  for (const [a, b] of edges) {
+    const pa = pts[a], pb = pts[b];
+    if (!pa || !pb) continue;
+    ctx.moveTo(pa.x * W, pa.y * H);
+    ctx.lineTo(pb.x * W, pb.y * H);
+  }
+  ctx.stroke();
+}
+
+// Minimal hand skeleton (MediaPipe Hands)
+export const HAND_EDGES: Array<[number, number]> = [
+  // palm
+  [0,1],[1,2],[2,3],[3,4],      // thumb
+  [0,5],[5,6],[6,7],[7,8],      // index
+  [5,9],[9,10],[10,11],[11,12], // middle
+  [9,13],[13,14],[14,15],[15,16], // ring
+  [13,17],[17,18],[18,19],[19,20], // pinky
+  [0,17] // side
+];
+
+// Convenience wrappers that apply the same mirror transform used for the video
+export function drawFaceDebug(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  mirror: boolean,
+  face: ReadonlyArray<{x:number; y:number}>
+) {
+  ctx.save();
+  if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+
+  // points
+  ctx.fillStyle = "rgba(255,0,0,0.85)";
+  drawPoints(ctx, W, H, face as any, 1.8);
+
+  // highlight some indices (eye centers, lips, nose tip)
+  const highlightIdx = [468, 473, 13, 14, 1].filter(i => face[i]);
+  const highlights = highlightIdx.map(i => face[i]!);
+  ctx.fillStyle = "rgba(0,255,0,0.85)";
+  drawPoints(ctx, W, H, highlights, 3);
+
+  ctx.restore();
+}
+
+export function drawHandsDebug(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  mirror: boolean,
+  hands: Array<ReadonlyArray<{x:number; y:number}>>
+) {
+  ctx.save();
+  if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+
+  for (const hand of hands) {
+    // skeleton
+    ctx.strokeStyle = "rgba(0,180,255,0.9)";
+    ctx.lineWidth = 2;
+    drawConnections(ctx, W, H, hand as any, HAND_EDGES);
+
+    // joints
+    ctx.fillStyle = "rgba(0,180,255,0.9)";
+    drawPoints(ctx, W, H, hand as any, 2.2);
+
+    // fingertips a bit larger: 4, 8, 12, 16, 20
+    const tips = [4,8,12,16,20].map(i => hand[i]).filter(Boolean) as any[];
+    ctx.fillStyle = "rgba(255,100,0,0.95)";
+    drawPoints(ctx, W, H, tips, 3.3);
+  }
+
+  ctx.restore();
+}
 
 export function paintFrame(
   ctx: CanvasRenderingContext2D,
@@ -165,6 +266,7 @@ export function paintFrame(
   drawBigFocusBannerWithAlpha(ctx, status, W, H, statusAlpha);
 //   drawStatusChip(ctx, status, W);
   if (activeHabitLabels.length) drawWarningsTopLeft(ctx, activeHabitLabels);
+  
 
   let pauseButtons: PauseButtonRects | null = null;
   if (paused) pauseButtons = drawPausePanelWithButtons(ctx, W, H);
