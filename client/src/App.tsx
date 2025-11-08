@@ -9,11 +9,6 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<AuthPage />} />
         {/* Add other routes here */}
-        <FocusAndHabits showDebug
-          onStatusChange={(s) => console.log("status:", s)}
-          onPaused={() => console.log("paused")}
-          onResume={() => console.log("resume")}
-          onEndSession={() => console.log("end session")} />
       </Routes>
     </BrowserRouter>
   );
