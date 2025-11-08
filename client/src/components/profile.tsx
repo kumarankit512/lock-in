@@ -13,6 +13,7 @@ export default function ProfileDashboard() {
     confirmPassword: ''
   });
   const [heatmapData, setHeatmapData] = useState([]);
+  const [sessionsData, setSessionsData] = useState([]);
 
   // Mock user data
   const userData = {
@@ -32,9 +33,90 @@ export default function ProfileDashboard() {
     pauseTime: 0
   });
 
-  const monthlyGraphData = [];
 
-   useEffect(() => {
+  const [monthlyGraphData, setMonthlyGraphData] = useState([]);
+
+// Create monthly graph data as array
+const createMonthlyGraphData = () => {
+  const today = new Date();
+  const newData = [];
+
+  for (let i = 0; i <= 12; i++) {
+    const currentDate = new Date(today);
+    currentDate.setMonth(today.getMonth() - i);
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const monthName = currentDate.toLocaleString('default', { month: 'long' });
+
+    newData.push({
+      key: `${year}-${month}`,
+      month: monthName,
+      year: year,
+      monthIndex: month,
+      monthYear: `${monthName} ${year}`,
+      displayOrder: i,
+      total_hours: 0,
+      intervals: 0,
+      time_hair: 0,
+      time_nail: 0,
+      time_eye: 0,
+      time_nose: 0,
+      time_unfocused: 0,
+      time_paused: 0
+    });
+  }
+  // Reverse to get chronological order
+  setMonthlyGraphData(newData?.reverse());
+};
+
+// Fill data with array approach
+const fillMonthlyGraphData = (sessionsDataParam = null) => {
+  const dataToUse = sessionsDataParam || sessionsData;
+
+  if (!dataToUse || dataToUse.length === 0) {
+    console.warn('No sessions data available');
+    return;
+  }
+
+setMonthlyGraphData(prevData => {
+    const prevDataArray = Array.isArray(prevData) ? prevData : 
+                         prevData instanceof Map ? Array.from(prevData.values()) : [];
+
+    // Create a copy of the previous data to avoid mutations
+    const updatedData = [...prevDataArray];
+
+    dataToUse.forEach(session => {
+      const sessionDate = new Date(session.date);
+      const sessionYear = sessionDate.getFullYear();
+      const sessionMonth = sessionDate.getMonth();
+
+      // Find existing month data in the array
+      const existingIndex = updatedData.findIndex(item => 
+        item.year === sessionYear && item.monthIndex === sessionMonth
+      );
+
+      if (existingIndex !== -1) {
+        // Update existing month data
+        updatedData[existingIndex] = {
+          ...updatedData[existingIndex],
+          total_hours: updatedData[existingIndex].total_hours + (session.total_hours || 0),
+          intervals: updatedData[existingIndex].intervals + (session.intervals || 0),
+          time_hair: updatedData[existingIndex].time_hair + parseFloat(((session.time_hair || 0) / 60).toFixed(2)), // seconds to minutes
+          time_nail: updatedData[existingIndex].time_nail + parseFloat(((session.time_nail || 0) / 60).toFixed(2)), // seconds to minutes
+          time_eye: updatedData[existingIndex].time_eye + parseFloat(((session.time_eye || 0) / 60).toFixed(2)), // seconds to minutes
+          time_nose: updatedData[existingIndex].time_nose + parseFloat(((session.time_nose || 0) / 60).toFixed(2)), // seconds to minutes
+          time_unfocused: updatedData[existingIndex].time_unfocused + parseFloat(((session.time_unfocused || 0) / 60).toFixed(2)), // seconds to minutes
+          time_paused: updatedData[existingIndex].time_paused + parseFloat(((session.time_paused || 0) / 60).toFixed(2)) // seconds to minutes
+        };
+      }
+    });
+
+    return updatedData;
+  });
+};
+
+   //useEffect(() => {
     const fetchRecordData = async () => {
       try {
         const response = await fetch('http://localhost:5001/api/get-record/' + JSON.parse(localStorage.getItem('user')).userId);
@@ -58,8 +140,8 @@ export default function ProfileDashboard() {
         console.error('Error fetching user records:', error);
       }
     };
-    fetchRecordData();
-  }, []);
+    //fetchRecordData();
+  //}, []);
   
 function getDatePositionInArray(dateString: string, today: Date = new Date()): number {
     // Parse the date string manually to avoid timezone issues
@@ -87,55 +169,84 @@ function getDatePositionInArray(dateString: string, today: Date = new Date()): n
 }
 
   // Generate heatmap data
-const generateHeatmapData = async ()  =>  {
-    try {
-      const user = JSON.parse(localStorage.getItem?.('user') || '{}');
-      //{"userId":"690912e9370da3b01c281d0b","username":"BobbyT","email":"someone@gmail.com"}
-      console.log(user);
-      const today = new Date();
-      //console.log(today);
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
-      const day = today.getDate().toString().padStart(2, '0');
-      const todayIsoDateString = `${year}-${month}-${day}`;
-      //console.log(todayIsoDateString); // Example output: "2025-11-04"
+const generateHeatmapData = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    console.log(user);
 
-      const lastYear = today.getFullYear() - 1;
-      const lastYearIsoDateString = `${lastYear}-${month}-${day}`;
-      //console.log(lastYearIsoDateString);
-      const response = await fetch('http://localhost:5001/api/get-sessions-from-date/' + user.userId + '/' + lastYearIsoDateString + '/' + todayIsoDateString)
-      if(!response.ok) {
-          console.error('Server error:', response.status, response.statusText);
-          return;
-      }
-      const sessionData = await response.json();
-      const activity = new Array(365).fill(0);
-      for (let i = 0; i < sessionData.data.sessions.length; i++) {
-        activity[getDatePositionInArray(sessionData.data.sessions[i].date)] += sessionData.data.sessions[i].total_hours;
-        //console.log( getDatePositionInArray(sessionData.data.sessions[i].date), 'Total Hours:', sessionData.data.sessions[i].total_hours);
-      }
-      const data = new Array(365);
-      for (let i = 364; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        data[364 - i] = ({
-          date: date.toISOString().split('T')[0],
-          count: activity[364-i]
-        });
-      }
-      return data;
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    const todayIsoDateString = `${year}-${month}-${day}`;
+
+    const lastYear = today.getFullYear() - 1;
+    const lastYearIsoDateString = `${lastYear}-${month}-${day}`;
+
+    const response = await fetch('http://localhost:5001/api/get-sessions-from-date/' + user.userId + '/' + lastYearIsoDateString + '/' + todayIsoDateString);
+
+    if (!response.ok) {
+      console.error('Server error:', response.status, response.statusText);
+      return { heatmapData: [], sessionsData: [] };
     }
-    catch (error){
-        console.error('Error fetching the session data for the heatmap', error);
-  };
-}
 
-  useEffect(() => {
-  const fetchHeatmapData = async () => {
-    const data = await generateHeatmapData();
-    setHeatmapData(data);
+    const result = await response.json();
+    const sessionsDataFromAPI = result.data.sessions || [];
+
+    // Set sessionsData state
+    setSessionsData(sessionsDataFromAPI);
+
+    // Use the data directly from the API response, not from state
+    const activity = new Array(365).fill(0);
+    for (let i = 0; i < sessionsDataFromAPI.length; i++) {
+      activity[getDatePositionInArray(sessionsDataFromAPI[i].date)] += sessionsDataFromAPI[i].total_hours;
+    }
+
+    const heatmapData = new Array(365);
+    for (let i = 364; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      heatmapData[364 - i] = {
+        date: date.toISOString().split('T')[0],
+        count: activity[364 - i]
+      };
+    }
+
+    return { heatmapData, sessionsData: sessionsDataFromAPI };
+  } catch (error) {
+    console.error('Error fetching the session data for the heatmap', error);
+    return { heatmapData: [], sessionsData: [] };
+  }
+};
+
+// Updated useEffect
+useEffect(() => {
+  const initializeData = async () => {
+    try {
+      // Get both datasets from generateHeatmapData
+      const { heatmapData: newHeatmapData, sessionsData: newSessionsData } = await generateHeatmapData();
+
+      // Set states
+      setHeatmapData(newHeatmapData);
+      setSessionsData(newSessionsData);
+
+      // Fetch other data
+      await fetchRecordData();
+
+      // Initialize monthly graph
+      createMonthlyGraphData();
+
+      // Fill monthly graph with the sessions data we just received
+      if (newSessionsData.length > 0) {
+      fillMonthlyGraphData(newSessionsData);
+      }
+
+    } catch (error) {
+      console.error('Error initializing application data:', error);
+    }
   };
-  fetchHeatmapData();
+
+  initializeData();
 }, []);
 
   // Recent sessions
@@ -232,32 +343,16 @@ const generateHeatmapData = async ()  =>  {
     },
   ];
 
-  // Monthly graph data
-  /*const monthlyGraphData = [
-    { month: 'Jan', total_hours: 24, intervals: 45, time_hair: 3.2, time_nail: 2.1, time_eye: 4.5, time_nose: 1.8, time_unfocused: 5.2, time_paused: 3.2 },
-    { month: 'Feb', total_hours: 28, intervals: 52, time_hair: 3.8, time_nail: 2.5, time_eye: 5.1, time_nose: 2.2, time_unfocused: 6.1, time_paused: 4.3 },
-    { month: 'Mar', total_hours: 32, intervals: 58, time_hair: 4.2, time_nail: 2.8, time_eye: 5.8, time_nose: 2.5, time_unfocused: 6.8, time_paused: 5.1 },
-    { month: 'Apr', total_hours: 30, intervals: 55, time_hair: 3.9, time_nail: 2.6, time_eye: 5.4, time_nose: 2.3, time_unfocused: 6.4, time_paused: 4.5 },
-    { month: 'May', total_hours: 35, intervals: 62, time_hair: 4.5, time_nail: 3.1, time_eye: 6.2, time_nose: 2.8, time_unfocused: 7.2, time_paused: 5.7 },
-    { month: 'Jun', total_hours: 38, intervals: 68, time_hair: 4.8, time_nail: 3.4, time_eye: 6.8, time_nose: 3.1, time_unfocused: 7.8, time_paused: 6.1 },
-    { month: 'Jul', total_hours: 36, intervals: 64, time_hair: 4.6, time_nail: 3.2, time_eye: 6.4, time_nose: 2.9, time_unfocused: 7.4, time_paused: 5.9 },
-    { month: 'Aug', total_hours: 40, intervals: 72, time_hair: 5.1, time_nail: 3.6, time_eye: 7.2, time_nose: 3.3, time_unfocused: 8.2, time_paused: 6.6 },
-    { month: 'Sep', total_hours: 42, intervals: 75, time_hair: 5.3, time_nail: 3.8, time_eye: 7.5, time_nose: 3.5, time_unfocused: 8.5, time_paused: 6.9 },
-    { month: 'Oct', total_hours: 39, intervals: 70, time_hair: 5.0, time_nail: 3.5, time_eye: 7.0, time_nose: 3.2, time_unfocused: 8.0, time_paused: 6.3 },
-    { month: 'Nov', total_hours: 41, intervals: 73, time_hair: 5.2, time_nail: 3.7, time_eye: 7.3, time_nose: 3.4, time_unfocused: 8.3, time_paused: 6.7 },
-    { month: 'Dec', total_hours: 37, intervals: 66, time_hair: 4.7, time_nail: 3.3, time_eye: 6.6, time_nose: 3.0, time_unfocused: 7.6, time_paused: 6.0 },
-  ];*/
-
   // Metrics configuration
   const metricsConfig = {
     total_hours: { label: 'Total Hours', color: '#3b82f6', unit: 'h' },
     intervals: { label: 'Intervals', color: '#8b5cf6', unit: '' },
-    time_hair: { label: 'Hair Time', color: '#ec4899', unit: 'h' },
-    time_nail: { label: 'Nail Time', color: '#f59e0b', unit: 'h' },
-    time_eye: { label: 'Eye Time', color: '#10b981', unit: 'h' },
-    time_nose: { label: 'Nose Time', color: '#06b6d4', unit: 'h' },
-    time_unfocused: { label: 'Unfocused Time', color: '#ef4444', unit: 'h' },
-    time_paused: { label: 'Paused Time', color: '#6366f1', unit: 'h' },
+    time_hair: { label: 'Hair Time', color: '#ec4899', unit: 'm' },
+    time_nail: { label: 'Nail Time', color: '#f59e0b', unit: 'm' },
+    time_eye: { label: 'Eye Time', color: '#10b981', unit: 'm' },
+    time_nose: { label: 'Nose Time', color: '#06b6d4', unit: 'm' },
+    time_unfocused: { label: 'Unfocused Time', color: '#ef4444', unit: 'm' },
+    time_paused: { label: 'Paused Time', color: '#6366f1', unit: 'm' },
   };
 
   // All Time Statistics - different views with 4 stats each
@@ -541,23 +636,28 @@ const generateHeatmapData = async ()  =>  {
               </div>
               
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={monthlyGraphData}>
+                <LineChart data={
+                  Array.isArray(monthlyGraphData) ? monthlyGraphData : 
+                  monthlyGraphData instanceof Map ? Array.from(monthlyGraphData.values()) :
+                  monthlyGraphData && typeof monthlyGraphData === 'object' ? Object.values(monthlyGraphData) :
+                  []
+                }>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="monthYear" />
                   <YAxis />
                   <Tooltip 
                     formatter={(value) => [
-                      `${value}${metricsConfig[selectedMetric].unit}`, 
-                      metricsConfig[selectedMetric].label
+                      `${value}${metricsConfig[selectedMetric]?.unit || ''}`, 
+                      metricsConfig[selectedMetric]?.label || selectedMetric
                     ]}
                   />
                   <Legend />
                   <Line 
                     type="monotone" 
                     dataKey={selectedMetric} 
-                    stroke={metricsConfig[selectedMetric].color} 
+                    stroke={metricsConfig[selectedMetric]?.color || '#8884d8'} 
                     strokeWidth={3}
-                    name={metricsConfig[selectedMetric].label}
+                    name={metricsConfig[selectedMetric]?.label || selectedMetric}
                     dot={{ r: 4 }}
                     activeDot={{ r: 6 }}
                   />
