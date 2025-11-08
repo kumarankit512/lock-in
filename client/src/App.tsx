@@ -35,11 +35,6 @@ function App() {
             <Navigate to="/login" replace />
           } 
         />
-         <FocusAndHabits showDebug
-          onStatusChange={(s) => console.log("status:", s)}
-          onPaused={() => console.log("paused")}
-          onResume={() => console.log("resume")}
-          onEndSession={() => console.log("end session")} />
       </Routes>
     </BrowserRouter>
   );

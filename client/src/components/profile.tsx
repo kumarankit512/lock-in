@@ -395,7 +395,7 @@ useEffect(() => {
           <div>
             {/* Top 10 Recent Sessions */}
             <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col" style={{ height: '452px' }}>
-          ``    <h2 className="text-xl font-semibold text-gray-900 mb-4">Most Recent Sessions</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Most Recent Sessions</h2>
               <div className="space-y-2 overflow-y-auto flex-1 pr-2">
                 {recentSessions.map((session, index) => (
                   <div key={session._id || index} className="border border-gray-200 rounded-lg">
