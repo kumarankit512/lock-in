@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AuthPage from './components/login';
 import ProfileDashboard from './components/profile';
+import FocusAndHabits from './components/FocusAndHabits';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -34,6 +35,11 @@ function App() {
             <Navigate to="/login" replace />
           } 
         />
+         <FocusAndHabits showDebug
+          onStatusChange={(s) => console.log("status:", s)}
+          onPaused={() => console.log("paused")}
+          onResume={() => console.log("resume")}
+          onEndSession={() => console.log("end session")} />
       </Routes>
     </BrowserRouter>
   );
