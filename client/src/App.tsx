@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import AuthPage from './components/login';
 import ProfileDashboard from './components/profile';
-import FocusAndHabits from './components/FocusAndHabits';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
