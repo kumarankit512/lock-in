@@ -5,6 +5,30 @@ export interface PauseButtonRects {
   end: DOMRect;
 }
 
+/* ---------- LOCK IN UI THEME ---------- */
+const PIXEL_FONT = '"Press Start 2P", system-ui, sans-serif';
+
+// Palette (taken from your UI)
+const COL = {
+  bgDark: "#0B1A1C",
+  white: "#FFFFFF",
+  white90: "rgba(255,255,255,.90)",
+  white85: "rgba(255,255,255,.85)",
+  white80: "rgba(255,255,255,.80)",
+  borderWhite35: "rgba(255,255,255,.35)",
+
+  // Status colors
+  focused: "#2B6B6B",     // moss/teal
+  paused:  "#3D7ECF",     // primary button blue
+  danger:  "#E46060",     // softer red than pure #ef4444
+
+  // Accents
+  chipBg:  "rgba(0,0,0,.45)",     // for small chips over video
+  dim:     "rgba(0,0,0,.45)",     // modal dimmer
+};
+
+/* ------------------------------------- */
+
 export function drawVideoFrame(
   ctx: CanvasRenderingContext2D,
   videoEl: HTMLVideoElement,
@@ -23,6 +47,7 @@ export function drawVideoFrame(
   }
 }
 
+/** Big banner at the top + outer border, with pixel font */
 export function drawBigFocusBannerWithAlpha(
   ctx: CanvasRenderingContext2D,
   status: FocusStatus,
@@ -31,101 +56,148 @@ export function drawBigFocusBannerWithAlpha(
   alpha: number
 ) {
   const color =
-    status === "FOCUSED" ? "#10b981" : status === "PAUSED" ? "#3b82f6" : "#ef4444";
+    status === "FOCUSED" ? COL.focused : status === "PAUSED" ? COL.paused : COL.danger;
 
+  // Banner strip
   ctx.save();
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = Math.min(0.95, alpha);
   ctx.fillStyle = color;
-  ctx.fillRect(0, 0, W, Math.round(H * 0.22));
+  ctx.fillRect(0, 0, W, Math.round(H * 0.20));
   ctx.restore();
 
+  // Label (pixel font)
   ctx.save();
-  ctx.font = "700 44px system-ui";
+  ctx.font = `700 28px ${PIXEL_FONT}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeStyle = "rgba(0,0,0,0.4)";
-  ctx.lineWidth = 6;
-  ctx.strokeText(status, W / 2, Math.round(H * 0.11));
-  ctx.fillText(status, W / 2, Math.round(H * 0.11));
+  // subtle glow for contrast on busy video
+  ctx.shadowColor = "rgba(0,0,0,.45)";
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = COL.white;
+  ctx.fillText(status.replace("_", " "), W / 2, Math.round(H * 0.10));
   ctx.restore();
 
+  // Outer frame
   ctx.save();
-  ctx.globalAlpha = Math.min(0.7, alpha + 0.1);
-  ctx.lineWidth = 8;
+  ctx.globalAlpha = Math.min(0.75, alpha + 0.05);
+  ctx.lineWidth = 6;
   ctx.strokeStyle = color;
-  ctx.strokeRect(4, 4, W - 8, H - 8);
+  ctx.strokeRect(3, 3, W - 6, H - 6);
   ctx.restore();
 }
 
+/** Small status chip (top-right), pixel font, translucent bg */
 export function drawStatusChip(
   ctx: CanvasRenderingContext2D,
   status: FocusStatus,
   W: number
 ) {
-  const txt = status;
-  ctx.font = "16px system-ui";
+  const txt = status.replace("_", " ");
+  ctx.font = `12px ${PIXEL_FONT}`;
   const m = ctx.measureText(txt);
-  const w = m.width + 16;
-  const h = 30;
+  const w = m.width + 18;
+  const h = 28;
   const x = W - w - 12;
   const y = 12;
 
   ctx.save();
-  ctx.globalAlpha = 0.9;
+  ctx.globalAlpha = 0.85;
   ctx.fillStyle =
-    status === "FOCUSED" ? "rgb(16,185,129)" : status === "PAUSED" ? "rgb(59,130,246)" : "rgb(239,68,68)";
+    status === "FOCUSED"
+      ? "rgba(43,107,107,.90)"
+      : status === "PAUSED"
+      ? "rgba(61,126,207,.90)"
+      : "rgba(228,96,96,.90)";
   ctx.fillRect(x, y, w, h);
   ctx.restore();
 
-  ctx.fillStyle = "#fff";
-  ctx.fillText(txt, x + 8, y + 20);
+  ctx.save();
+  ctx.fillStyle = COL.white;
+  ctx.textBaseline = "middle";
+  ctx.fillText(txt, x + 9, y + h / 2 + 1);
+  ctx.restore();
 }
 
+/** Warnings stack (top-left). Pixel font, translucent dark plate, white text. */
 export function drawWarningsTopLeft(ctx: CanvasRenderingContext2D, labels: string[]) {
   if (!labels.length) return;
   const padX = 10, padY = 8; let x = 12, y = 40;
-  ctx.font = "32px system-ui";
+  ctx.font = `12px ${PIXEL_FONT}`;
   for (const lab of labels) {
-    const text = `⚠ ${lab}`, m = ctx.measureText(text);
-    const textH = 18, boxW = Math.max(260, m.width + padX * 2), boxH = textH + padY * 2;
-    ctx.save(); ctx.globalAlpha = 0.45;  ctx.restore();
-    // ctx.strokeStyle = "rgba(200,210,255,0.9)"; ctx.lineWidth = 1; ctx.strokeRect(x, y, boxW, boxH);
-    ctx.fillStyle = "rgba(245,245,220,1)"; ; ctx.fillText(text, x + padX, y + padY + textH - 4);
+    const text = `⚠ ${lab}`;
+    const m = ctx.measureText(text);
+    const boxW = Math.max(260, m.width + padX * 2);
+    const boxH = 28;
+
+    // plate
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fillRect(x, y, boxW, boxH);
+    ctx.restore();
+
+    // text
+    ctx.save();
+    ctx.fillStyle = COL.white;
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x + padX, y + boxH / 2 + 1);
+    ctx.restore();
+
     y += boxH + 8;
   }
 }
 
+/** Pause modal with two buttons, pixel font + theme colors */
 export function drawPausePanelWithButtons(
   ctx: CanvasRenderingContext2D,
   W: number,
   H: number
 ): PauseButtonRects {
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  // Dimmer
+  ctx.fillStyle = COL.dim;
   ctx.fillRect(0, 0, W, H);
 
   const panelW = Math.floor(W * 0.75), panelH = Math.floor(H * 0.48);
   const x0 = Math.floor((W - panelW) / 2), y0 = Math.floor((H - panelH) / 2);
 
-  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(x0, y0, panelW, panelH);
-  ctx.fillStyle = "#fff"; ctx.font = "24px system-ui";
-  ctx.fillText("Session paused — not focused.", x0 + 30, y0 + 60);
-  ctx.font = "18px system-ui";
-  ctx.fillText("Click green to continue or blue to end the session.", x0 + 30, y0 + 110);
+  // Panel
+  ctx.save();
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  ctx.fillRect(x0, y0, panelW, panelH);
+  ctx.strokeStyle = COL.borderWhite35;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x0 + 0.5, y0 + 0.5, panelW - 1, panelH - 1);
+  ctx.restore();
 
-  const btnW = Math.floor(panelW * 0.42), btnH = 62, gap = Math.floor(panelW * 0.05);
+  // Copy
+  ctx.fillStyle = "#0E1B1C";
+  ctx.font = `16px ${PIXEL_FONT}`;
+  ctx.fillText("Session paused — not focused.", x0 + 30, y0 + 60);
+  ctx.font = `12px ${PIXEL_FONT}`;
+  ctx.fillText("Press CONTINUE to resume or END to finish the session.", x0 + 30, y0 + 102);
+
+  // Buttons
+  const btnW = Math.floor(panelW * 0.42), btnH = 56, gap = Math.floor(panelW * 0.05);
   const bx1 = x0 + Math.floor((panelW - (2 * btnW + gap)) / 2), by1 = y0 + panelH - btnH - 32;
   const bx2 = bx1 + btnW + gap, by2 = by1;
 
-  ctx.fillStyle = "rgb(80,220,80)"; ctx.fillRect(bx1, by1, btnW, btnH);
-  ctx.fillStyle = "rgb(20,40,20)"; ctx.font = "18px system-ui"; ctx.fillText("Continue (resume)", bx1 + 40, by1 + 40);
+  // Continue (focused green)
+  ctx.fillStyle = COL.focused;
+  ctx.fillRect(bx1, by1, btnW, btnH);
+  ctx.fillStyle = COL.white90;
+  ctx.font = `12px ${PIXEL_FONT}`;
+  ctx.textBaseline = "middle";
+  ctx.fillText("CONTINUE", bx1 + 24, by1 + btnH / 2 + 1);
 
-  ctx.fillStyle = "rgb(60,60,200)"; ctx.fillRect(bx2, by2, btnW, btnH);
-  ctx.fillStyle = "rgb(240,240,255)"; ctx.fillText("End session", bx2 + 70, by2 + 40);
+  // End (primary blue)
+  ctx.fillStyle = COL.paused;
+  ctx.fillRect(bx2, by2, btnW, btnH);
+  ctx.fillStyle = COL.white90;
+  ctx.fillText("END", bx2 + 24, by2 + btnH / 2 + 1);
 
   return { continue: new DOMRect(bx1, by1, btnW, btnH), end: new DOMRect(bx2, by2, btnW, btnH) };
 }
 
+/** DPR-safe canvas setup (keep pixel font crisp; video can stay smoothed) */
 export function resizeCanvasForDPR(canvas: HTMLCanvasElement, cssW: number, cssH: number) {
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = `${cssW}px`;
@@ -134,12 +206,13 @@ export function resizeCanvasForDPR(canvas: HTMLCanvasElement, cssW: number, cssH
   canvas.height = Math.floor(cssH * dpr);
   const ctx = canvas.getContext("2d")!;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // keep smoothing on for video; pixel font renders fine at device scale
   ctx.imageSmoothingEnabled = true;
   return ctx;
 }
-// --- DEBUG LANDMARK DRAWING ---
 
-// Draw small circles for a set of normalized points (0..1) with the same mirroring
+/* ------- Debug helpers (colors tuned to theme) ------- */
+
 export function drawPoints(
   ctx: CanvasRenderingContext2D,
   W: number,
@@ -157,7 +230,6 @@ export function drawPoints(
   ctx.fill();
 }
 
-// Lines between pairs of indices (e.g., hand skeleton).
 export function drawConnections(
   ctx: CanvasRenderingContext2D,
   W: number,
@@ -177,16 +249,14 @@ export function drawConnections(
 
 // Minimal hand skeleton (MediaPipe Hands)
 export const HAND_EDGES: Array<[number, number]> = [
-  // palm
-  [0,1],[1,2],[2,3],[3,4],      // thumb
-  [0,5],[5,6],[6,7],[7,8],      // index
-  [5,9],[9,10],[10,11],[11,12], // middle
-  [9,13],[13,14],[14,15],[15,16], // ring
-  [13,17],[17,18],[18,19],[19,20], // pinky
-  [0,17] // side
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [5,9],[9,10],[10,11],[11,12],
+  [9,13],[13,14],[14,15],[15,16],
+  [13,17],[17,18],[18,19],[19,20],
+  [0,17]
 ];
 
-// Convenience wrappers that apply the same mirror transform used for the video
 export function drawFaceDebug(
   ctx: CanvasRenderingContext2D,
   W: number,
@@ -197,14 +267,12 @@ export function drawFaceDebug(
   ctx.save();
   if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
 
-  // points
-  ctx.fillStyle = "rgba(255,0,0,0.85)";
+  ctx.fillStyle = "rgba(255,120,120,.95)";
   drawPoints(ctx, W, H, face as any, 1.8);
 
-  // highlight some indices (eye centers, lips, nose tip)
   const highlightIdx = [468, 473, 13, 14, 1].filter(i => face[i]);
   const highlights = highlightIdx.map(i => face[i]!);
-  ctx.fillStyle = "rgba(0,255,0,0.85)";
+  ctx.fillStyle = "rgba(91,163,225,.95)";
   drawPoints(ctx, W, H, highlights, 3);
 
   ctx.restore();
@@ -221,24 +289,22 @@ export function drawHandsDebug(
   if (mirror) { ctx.translate(W, 0); ctx.scale(-1, 1); }
 
   for (const hand of hands) {
-    // skeleton
-    ctx.strokeStyle = "rgba(0,180,255,0.9)";
+    ctx.strokeStyle = "rgba(91,163,225,.9)";
     ctx.lineWidth = 2;
     drawConnections(ctx, W, H, hand as any, HAND_EDGES);
 
-    // joints
-    ctx.fillStyle = "rgba(0,180,255,0.9)";
+    ctx.fillStyle = "rgba(91,163,225,.9)";
     drawPoints(ctx, W, H, hand as any, 2.2);
 
-    // fingertips a bit larger: 4, 8, 12, 16, 20
     const tips = [4,8,12,16,20].map(i => hand[i]).filter(Boolean) as any[];
-    ctx.fillStyle = "rgba(255,100,0,0.95)";
+    ctx.fillStyle = "rgba(228,96,96,.95)";
     drawPoints(ctx, W, H, tips, 3.3);
   }
 
   ctx.restore();
 }
 
+/** Main paint */
 export function paintFrame(
   ctx: CanvasRenderingContext2D,
   opts: {
@@ -259,14 +325,13 @@ export function paintFrame(
   if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
     drawVideoFrame(ctx, video, W, H, mirror);
   } else {
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = COL.bgDark;
     ctx.fillRect(0, 0, W, H);
   }
 
   drawBigFocusBannerWithAlpha(ctx, status, W, H, statusAlpha);
-//   drawStatusChip(ctx, status, W);
+  // drawStatusChip(ctx, status, W);
   if (activeHabitLabels.length) drawWarningsTopLeft(ctx, activeHabitLabels);
-  
 
   let pauseButtons: PauseButtonRects | null = null;
   if (paused) pauseButtons = drawPausePanelWithButtons(ctx, W, H);
