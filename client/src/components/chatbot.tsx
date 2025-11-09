@@ -229,7 +229,7 @@ export default function Test() {
                   <img src={shield} alt="Fullscreen" className="w-10 h-7 cursor-pointer" style={{ imageRendering: 'pixelated' }} />
                 )}
               </button>
-              <button onClick={() => setIsOpen(false)} className="hover:opacity-80 p-1" title="Close">
+              <button onClick={() => setIsOpen(false)} className="cursor-pointer hover:opacity-80 p-1" title="Close">
                 ✕
               </button>
             </div>
