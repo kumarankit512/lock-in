@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from '/logo.png';
+import Chatbot from "./chatbot";
+
 export default function PresetsPage() {
   const nav = useNavigate();
 
@@ -313,8 +315,6 @@ export default function PresetsPage() {
             </svg>
           </button>
 
-
-
           {/* Tips */}
           <div className="mt-6 p-4 rounded-xl border" style={{ backgroundColor: 'rgba(91,163,225,.05)', borderColor: 'rgba(91,163,225,.2)' }}>
             <div className="flex items-start gap-3">
@@ -325,6 +325,11 @@ export default function PresetsPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Chatbot - Fixed to bottom right */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Chatbot />
       </div>
     </div>
   );
