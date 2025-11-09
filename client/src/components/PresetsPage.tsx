@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-
+import logo from '/logo.png';
 export default function PresetsPage() {
   const nav = useNavigate();
 
@@ -62,7 +61,17 @@ export default function PresetsPage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl md:text-2xl tracking-wider text-white">LOCK IN</h1>
+            <h1 className="inline-flex items-center gap-3 text-xl md:text-2xl tracking-wider text-[rgb(122,199,196)]">
+              <img
+                src={logo}
+                alt="Lock In logo"
+                className="w-8 h-8 object-contain"
+                draggable={false}
+                decoding="async"
+                style={{ imageRendering: 'pixelated' }}
+              />
+              <span>LOCK IN</span>
+            </h1>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => nav('/profile')}
@@ -303,6 +312,7 @@ export default function PresetsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </button>
+
 
 
           {/* Tips */}

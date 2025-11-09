@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from '/logo.png';
 
 interface AuthPageProps {
   setIsAuthenticated: (value: boolean) => void;
@@ -127,16 +128,37 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
       <div className="relative z-10 w-full max-w-6xl flex items-center justify-between gap-12">
         {/* Left: Brand copy */}
         <div className="hidden lg:block flex-1 text-white space-y-6" style={{ textShadow: '0 2px 8px rgba(0,0,0,.35)' }}>
-          <div className="flex items-center gap-2 mb-8">
-            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 12h18M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="5" r="2" fill="currentColor" />
-            </svg>
-            <span className="text-2xl tracking-wider">LOCK IN</span>
+          <div className="flex items-center gap-4 mb-6">
+            <img
+              src={'logo.png'}   // /public/logo.png
+              alt="Lock In"
+              className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain"
+              draggable={false}
+              decoding="async"
+              style={{
+                imageRendering: 'pixelated',
+                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,.35))'
+              }}
+            />
+            <span
+              className="text-2xl md:text-3xl lg:text-4xl"
+              style={{ letterSpacing: '0.18em' }}
+            >
+              LOCK IN
+            </span>
           </div>
 
-          <h1 className="text-5xl leading-snug">
-            LOCK IN<br />FOCUS
+          <h1
+            className="leading-tight"
+            style={{
+              fontSize: '40px',
+              letterSpacing: '0.06em',
+              lineHeight: 1.15,
+              maxWidth: 700,
+            }}
+          >
+            FOR THOSE WHO NEVER SETTLE
+            <br />
           </h1>
 
           <p className="text-base text-white/90">
@@ -145,7 +167,7 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
 
           <p className="text-xs text-white/85 max-w-md">
             On-device face landmarks detect Focused/Not Focused and flag stress habits
-            (hair, nose, eye, nail) so you study calmer, longer — no video uploaded.
+            (hair, nose, eye, nail) so you study calmer, longer — no video saved(complete privacy).
           </p>
         </div>
 
@@ -224,6 +246,45 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
                 </div>
                 {errors.password && <p className="mt-1 text-xs" style={{ color: '#991B1B' }}>{errors.password}</p>}
               </div>
+              {!isLogin && (
+                <div>
+                  <label className="block text-xs mb-2">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      autoComplete="new-password"
+                      className={`w-full px-4 py-3 pr-12 border rounded-xl outline-none transition ${
+                        errors.confirmPassword ? 'border-red-500' : ''
+                      }`}
+                      style={{
+                        borderColor: errors.confirmPassword ? '#EF4444' : '#D0D7DE',
+                        backgroundColor: '#FFFFFF'
+                      }}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
+                      aria-label="toggle confirm password"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-xs" style={{ color: '#991B1B' }}>
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              )}
+
 
               {isLogin && (
                 <div className="text-right">
