@@ -1,3 +1,131 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* --- Pixel look helpers --- */
+.pixel-font {
+  font-family: "Press Start 2P", monospace;
+  letter-spacing: 0.02em;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
+/* Subtle dotted card background (optional, matches your container) */
+.pixel-dots {
+  background-image: radial-gradient(rgba(61, 126, 207, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Core pixel input */
+.pixel-input {
+  font-family: "Press Start 2P", monospace;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #4A5568;
+
+  width: 100%;
+  padding: 16px 18px;
+
+  /* hard edges */
+  border-radius: 12px;
+
+  /* “two-tone” bevel + crisp inner edge */
+  background: #F6F8FB;
+  border: 2px solid #DFE6EF;
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 rgba(0,0,0,0.03),
+    0 0 0 0 transparent; /* reserve slot for focus ring */
+
+  /* keep placeholder crisp */
+  image-rendering: pixelated;
+}
+
+.pixel-input::placeholder {
+  color: #94A3B8;
+  opacity: 1;
+}
+
+.pixel-input:focus {
+  outline: none;
+  border-color: #6FB8E6;
+  background: #FFFFFF;
+
+  /* blocky “pixel” ring using step shadows */
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    inset 0 -2px 0 rgba(0,0,0,0.04),
+    0 0 0 3px rgba(111, 184, 230, 0.20),
+    0 0 0 6px rgba(122, 199, 196, 0.12);
+}
+
+/* Disabled/read-only feel (if you use it) */
+.pixel-input[readonly],
+.pixel-input:disabled {
+  color: #6B7280;
+  background: #F3F5F9;
+  border-color: #E5EDF6;
+}
+
+/* Pixel select + textarea share the same skin */
+.pixel-select,
+.pixel-textarea {
+  composes: pixel-input;
+}
+
+/* Optional: pixel button for “Change Password” etc. */
+.pixel-btn {
+  font-family: "Press Start 2P", monospace;
+  letter-spacing: 0.02em;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 2px solid #CFE4F5;
+  color: #ffffff;
+  background: linear-gradient(90deg, #7AC7C4 0%, #5BA3E1 100%);
+  box-shadow:
+    inset 0 -3px 0 rgba(0,0,0,0.08),
+    0 10px 30px rgba(61,126,207,0.18);
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+.pixel-btn:hover { transform: translateY(-1px); }
+.pixel-btn:active { transform: translateY(0); box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12); }
+
+
+/* Make autofilled inputs keep the pixel font + colors */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #0f172a;                 /* text color */
+  caret-color: #0f172a;
+  font-family: "Press Start 2P", monospace !important;
+
+  /* cover Chrome's yellow with your field bg */
+  -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.92) inset;
+          box-shadow: 0 0 0 1000px rgba(255,255,255,0.92) inset;
+
+  /* prevent flash on page load */
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* optional: keep your rounded corners illusion */
+input:-webkit-autofill::first-line {
+  font-family: "Press Start 2P", monospace !important;
+  font-size: 14px; /* match your input text size */
+  line-height: 1.2;
+}
+
+@layer utilities {
+  .autofill-pixel:-webkit-autofill,
+  .autofill-pixel:-webkit-autofill:hover,
+  .autofill-pixel:-webkit-autofill:focus {
+    -webkit-text-fill-color: #0f172a;
+    caret-color: #0f172a;
+    font-family: "Press Start 2P", monospace !important;
+    -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.95) inset;
+            box-shadow: 0 0 0 1000px rgba(255,255,255,0.95) inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+}
