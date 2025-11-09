@@ -35,10 +35,13 @@ const OFF_HOLD_MS = 0.25 * 1000;
 const TH_EYE_MUL = 0.18;
 const TH_NOSE_MUL = 0.22;
 const TH_MOUTH_MUL = 0.24;
-const TH_HAIR_MUL = 0.22;
+const TH_HAIR_MUL = 0.18;
+const HAIR_MAX_ABOVE_FOREHEAD_MUL = 1.6;
 
 const HAIR_ABOVE_FOREHEAD = 0.06;
 const HAIR_ABOVE_EYE = 0.02;
+const HAIR_X_MARGIN_MUL = 0.09;     
+const HAIR_NEAR_SCALP_MUL = 0.16; 
 
 /** Face indices (MediaPipe) */
 const L_EYE_OUTER = 33, R_EYE_OUTER = 263;
@@ -128,12 +131,23 @@ function isInHairBand(
   eyeLineY: number,
   scale: number
 ) {
-  const TH_HAIR = TH_HAIR_MUL * scale;
-  const aboveForehead = p.y < (forehead.y - HAIR_ABOVE_FOREHEAD * scale);
-  const nearTemples =
-    dist(p, leftTemple) < TH_HAIR || dist(p, rightTemple) < TH_HAIR;
+  const xMin = Math.min(leftTemple.x, rightTemple.x) - HAIR_X_MARGIN_MUL * scale;
+  const xMax = Math.max(leftTemple.x, rightTemple.x) + HAIR_X_MARGIN_MUL * scale;
+  const withinHeadBandX = p.x >= xMin && p.x <= xMax;
+  // Must be above eyes (like before)
   const aboveEye = p.y < (eyeLineY - HAIR_ABOVE_EYE * scale);
-  return (aboveForehead || nearTemples) && aboveEye;
+  // Must also be either (a) clearly above forehead OR (b) near scalp (forehead/temple) in distance terms
+  const tooHighAboveForehead = p.y < (forehead.y - HAIR_MAX_ABOVE_FOREHEAD_MUL * scale);
+  if (tooHighAboveForehead) return false;
+  const aboveForehead = p.y < (forehead.y - HAIR_ABOVE_FOREHEAD * scale);
+  const nearScalp =
+    Math.min(
+      dist(p, forehead),
+      dist(p, leftTemple),
+      dist(p, rightTemple)
+    ) < (HAIR_NEAR_SCALP_MUL * scale);
+
+  return withinHeadBandX && aboveEye && (aboveForehead || nearScalp);
 }
 
 export interface HabitsEngineOptions {
@@ -211,8 +225,8 @@ export class HabitsEngine {
 
       // Proximity checks
       eyeRub = anyNear(hands, ALL_TIPS, eyeTargets, TH_EYE);
-      noseRub = anyNear(hands, [INDEX_TIP, MIDDLE_TIP], noseTargets, TH_NOSE);
-      nailBite = anyNear(hands, [THUMB_TIP], mouthTargets, TH_MOUTH);
+      noseRub = anyNear(hands, ALL_TIPS, noseTargets, TH_NOSE);
+      nailBite = anyNear(hands, ALL_TIPS, mouthTargets, TH_MOUTH);
 
       // Hair band check for any fingertip
       const eyeLineY = Math.min(leCenter.y, reCenter.y);

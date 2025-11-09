@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Test from "./chatbot.js";
+
 
 export default function PresetsPage() {
   const nav = useNavigate();
@@ -304,7 +304,6 @@ export default function PresetsPage() {
             </svg>
           </button>
 
-          <Test />
 
           {/* Tips */}
           <div className="mt-6 p-4 rounded-xl border" style={{ backgroundColor: 'rgba(91,163,225,.05)', borderColor: 'rgba(91,163,225,.2)' }}>

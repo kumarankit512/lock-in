@@ -4,7 +4,7 @@ import AuthPage from './components/login.js';
 import ProfileDashboard from './components/profile.js';
 import StudySessionPage from "./components/StudySessionPage.js";
 import PresetsPage from "./components/PresetsPage.js";
-import Test from './components/chatbot.js';
+
 
 
 
@@ -27,7 +27,6 @@ function App() {
 
         {/* Login route — after successful login/signup go to /presets */}
         {/* Add other routes here */}
-        <Route path="/test" element={<Test />}/>
         <Route 
           path="/login" 
           element={

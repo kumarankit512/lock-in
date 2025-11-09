@@ -341,7 +341,6 @@ export default function StudySessionPage() {
         <Stat label="Nail biting" value={msToMinSec(counters.nail_bite_s * 1000)} />
       </div>
       
-      <Test/>
       {/* controls */}
       <div className="flex flex-wrap items-center gap-2">
         {!onBreak && breaksEnabled && !finished && (
