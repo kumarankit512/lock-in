@@ -188,14 +188,26 @@ export default function Test() {
 
   return (
     <>
+      {/* --- THIS BLOCK IS MODIFIED --- */}
       {!isOpen && (
-        <button
-          className="cursor-pointer fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[rgba(154,52,18,1)] hover:bg-[rgba(154,52,18,0.9)] text-white shadow-lg flex items-center justify-center z-50"
-          onClick={handleOpenChat}
-        >
-          <img src={chat} alt="Open Chat" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
-        </button>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center">
+          <div
+            className="flex flex-col px-2 py-1 bg-[rgba(122,199,196,1)] text-white rounded-md mb-2"
+            style={{ ...pixelFontStyle, fontSize: '0.65rem' }}
+          >
+            <span>Hi I'm Ashley,</span>
+            <span>Your virtual study buddy.</span>
+          </div>
+          <button
+            className="cursor-pointer w-14 h-14 rounded-full bg-[rgba(122,199,196,1)] hover:bg-[rgba(122,199,196,1)] text-white shadow-lg flex items-center justify-center"
+            onClick={handleOpenChat}
+            title="AI Chatbot"
+          >
+            <img src={chat} alt="Open Chat" className="w-8 h-8" style={{ imageRendering: 'pixelated' }} />
+          </button>
+        </div>
       )}
+      {/* --- END OF MODIFICATION --- */}
 
       {isOpen && (
         <div
@@ -280,7 +292,6 @@ export default function Test() {
               className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               style={{ ...pixelFontStyle, fontSize: '0.65rem' }}
             />
-            {/* --- THIS BUTTON IS MODIFIED --- */}
             <button
               onClick={sendMessage}
               disabled={loading}
@@ -289,7 +300,6 @@ export default function Test() {
             >
               Send
             </button>
-            {/* --- END OF MODIFICATION --- */}
           </div>
         </div>
       )}

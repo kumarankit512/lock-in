@@ -74,7 +74,7 @@ def tts():
         # 1. Generate the audio stream from ElevenLabs using the v1 client
         audio_stream = elevenlabs_client.text_to_speech.convert(
             text=message,  # <-- Use the message from the client
-            voice_id="4tRn1lSkEn13EVTuqb0g",  # Example voice
+            voice_id="bxiObU1YDrf7lrFAyV99",  # Example voice
             model_id="eleven_multilingual_v2",
             output_format="mp3_44100_128",
         )
