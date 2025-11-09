@@ -7,7 +7,6 @@ import PresetsPage from "./components/PresetsPage.js";
 
 
 
-
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
