@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import FocusEye from "./FocusEye";
 
+
 type FocusStatus = "FOCUSED" | "NOT FOCUSED" | "PAUSED";
 type HabitKind = "hair_touch" | "nose_touch" | "eye_rub" | "nail_bite";
 
@@ -14,7 +15,7 @@ type BreakEntry = {
 
 async function postSessionResult(payload: any) {
   try {
-    await fetch("http://127.0.0.1:5001//api/create-session", {
+    await fetch("http://127.0.0.1:5001/api/create-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       keepalive: true,
@@ -67,8 +68,8 @@ export default function StudySessionPage() {
   });
 
   // --- payload helpers ---
-  const USER_ID = "690bca9eab4d0306fbe1c0f1";   // TODO: wire real values
-  const USERNAME = "Bobby";
+  const USER_ID = JSON.parse(localStorage.getItem('user') || '{"userId": ""}')?.userId;   // TODO: wire real values
+  const USERNAME = JSON.parse(localStorage.getItem('user') || '{"userId": ""}')?.username;
 
   function pad2(n: number) { return String(n).padStart(2, "0"); }
   function toYMD(d: Date) {
@@ -77,7 +78,7 @@ export default function StudySessionPage() {
   function toHM(d: Date) {
     return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   }
-  function buildBackendPayload() {
+ function buildBackendPayload() {
     const startedAt = sessionStartRef.current ?? new Date();
     // const intervalsPlanned = intervalMin > 0 ? Math.ceil(totalMin / intervalMin) : 0;
   
@@ -87,7 +88,7 @@ export default function StudySessionPage() {
       date: toYMD(startedAt),
       time_started: toHM(startedAt),
   
-      total_hours: Number((totalMin / 60).toFixed(2)),
+      total_hours: parseFloat(((counters.focused_s+counters.not_focused_s+totalBreakSeconds)/3600).toFixed(2)),
       intervals: breakCount,
       time_per_interval: intervalMin,
   
@@ -339,7 +340,8 @@ export default function StudySessionPage() {
         <Stat label="Eye rubbing" value={msToMinSec(counters.eye_rub_s * 1000)} />
         <Stat label="Nail biting" value={msToMinSec(counters.nail_bite_s * 1000)} />
       </div>
-
+      
+      <Test/>
       {/* controls */}
       <div className="flex flex-wrap items-center gap-2">
         {!onBreak && breaksEnabled && !finished && (

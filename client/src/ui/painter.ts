@@ -84,14 +84,14 @@ export function drawStatusChip(
 
 export function drawWarningsTopLeft(ctx: CanvasRenderingContext2D, labels: string[]) {
   if (!labels.length) return;
-  const padX = 10, padY = 8; let x = 12, y = 12;
-  ctx.font = "16px system-ui";
+  const padX = 10, padY = 8; let x = 12, y = 40;
+  ctx.font = "32px system-ui";
   for (const lab of labels) {
     const text = `⚠ ${lab}`, m = ctx.measureText(text);
     const textH = 18, boxW = Math.max(260, m.width + padX * 2), boxH = textH + padY * 2;
-    ctx.save(); ctx.globalAlpha = 0.45; ctx.fillStyle = "#001030"; ctx.fillRect(x, y, boxW, boxH); ctx.restore();
-    ctx.strokeStyle = "rgba(200,210,255,0.9)"; ctx.lineWidth = 1; ctx.strokeRect(x, y, boxW, boxH);
-    ctx.fillStyle = "#fff"; ctx.fillText(text, x + padX, y + padY + textH - 4);
+    ctx.save(); ctx.globalAlpha = 0.45;  ctx.restore();
+    // ctx.strokeStyle = "rgba(200,210,255,0.9)"; ctx.lineWidth = 1; ctx.strokeRect(x, y, boxW, boxH);
+    ctx.fillStyle = "rgba(245,245,220,1)"; ; ctx.fillText(text, x + padX, y + padY + textH - 4);
     y += boxH + 8;
   }
 }
