@@ -68,7 +68,7 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
 
     try {
       if (isLogin) {
-        const response = await fetch('http://localhost:5001/api/login', {
+        const response = await fetch('https://lock-in-sable.vercel.app/api/login', {
           method: "POST",
           body: JSON.stringify({ email: formData.email, password: formData.password }),
           headers: { "Content-Type": "application/json; charset=UTF-8" }
@@ -79,7 +79,7 @@ export default function AuthPage({ setIsAuthenticated }: AuthPageProps) {
         localStorage.setItem('user', JSON.stringify({ userId: data.data.user.id, username: data.data.user.username, email: formData.email }));
         setIsAuthenticated(true);
       } else {
-        const response = await fetch('http://localhost:5001/api/signup', {
+        const response = await fetch('https://lock-in-sable.vercel.app/api/signup', {
           method: "POST",
           body: JSON.stringify({ username: formData.username, email: formData.email, password: formData.password }),
           headers: { "Content-Type": "application/json; charset=UTF-8" }

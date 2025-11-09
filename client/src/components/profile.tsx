@@ -37,7 +37,7 @@ export default function ProfileDashboard() {
 
   const fetchRecentSessions = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/get-sessions/' + user.userId);
+      const response = await fetch('https://lock-in-sable.vercel.app/api/get-sessions/' + user.userId);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setRecentSessions(data.data.sessions);
@@ -115,7 +115,7 @@ export default function ProfileDashboard() {
 
   const fetchRecordData = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/get-record/' + user.userId);
+      const response = await fetch('https://lock-in-sable.vercel.app/api/get-record/' + user.userId);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setRecordData({
@@ -151,7 +151,7 @@ export default function ProfileDashboard() {
       const todayIso = `${y}-${m}-${d}`;
       const lastYearIso = `${y - 1}-${m}-${d}`;
 
-      const response = await fetch('http://localhost:5001/api/get-sessions-from-date/' + user.userId + '/' + lastYearIso + '/' + todayIso);
+      const response = await fetch('https://lock-in-sable.vercel.app/api/get-sessions-from-date/' + user.userId + '/' + lastYearIso + '/' + todayIso);
       if (!response.ok) return { heatmapData: [], sessionsData: [] };
       const result = await response.json();
       const sessions = result.data.sessions || [];
