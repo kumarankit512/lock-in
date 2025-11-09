@@ -188,18 +188,17 @@ export default function Test() {
 
   return (
     <>
-      {/* --- THIS BLOCK IS MODIFIED --- */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center ">
           <div
-            className="flex flex-col px-2 py-1 bg-[rgba(122,199,196,1)] text-white rounded-md mb-2"
+            className="flex flex-col px-2 py-1 bg-black/50 text-white rounded-md mb-2 backdrop-blur-sm bg-[rgba(154,52,18,1)]"
             style={{ ...pixelFontStyle, fontSize: '0.65rem' }}
           >
             <span>Hi I'm Ashley,</span>
             <span>Your virtual study buddy.</span>
           </div>
           <button
-            className="cursor-pointer w-14 h-14 rounded-full bg-[rgba(122,199,196,1)] hover:bg-[rgba(122,199,196,1)] text-white shadow-lg flex items-center justify-center"
+            className="cursor-pointer w-14 h-14 rounded-full bg-[rgba(154,52,18,1)] hover:bg-[rgba(154,52,18,0.9)] text-white shadow-lg flex items-center justify-center"
             onClick={handleOpenChat}
             title="AI Chatbot"
           >
@@ -207,7 +206,6 @@ export default function Test() {
           </button>
         </div>
       )}
-      {/* --- END OF MODIFICATION --- */}
 
       {isOpen && (
         <div
@@ -281,6 +279,7 @@ export default function Test() {
           </div>
 
           <div className="p-3 border-t bg-white flex">
+            {/* --- THIS INPUT IS MODIFIED --- */}
             <input
               ref={inputRef}
               type="text"
@@ -289,9 +288,15 @@ export default function Test() {
               onKeyDown={handleKeyDown}
               disabled={loading}
               placeholder="Type a message..."
-              className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              style={{ ...pixelFontStyle, fontSize: '0.65rem' }}
+              className="flex-1 border-transparent rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgba(154,52,18,1)] placeholder-white/70"
+              style={{
+                ...pixelFontStyle,
+                fontSize: '0.65rem',
+                backgroundColor: 'rgba(139, 69, 19, 0.3)',
+                color: 'white',
+              }}
             />
+            {/* --- END OF MODIFICATION --- */}
             <button
               onClick={sendMessage}
               disabled={loading}
