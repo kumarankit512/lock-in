@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import FocusEye from "./FocusEye";
-import Test from "./chatbot.js";
+
 
 type FocusStatus = "FOCUSED" | "NOT FOCUSED" | "PAUSED";
 type HabitKind = "hair_touch" | "nose_touch" | "eye_rub" | "nail_bite";
@@ -439,8 +439,6 @@ export default function StudySessionPage() {
             </div>
           </div>
         )}
-
-        <Test />
       </div>
     </div>
   );
