@@ -34,7 +34,9 @@ export default function StudySessionPage() {
   const rawInterval = parseInt(url.searchParams.get("interval") || "30", 10);
 
   const totalMin = Number.isFinite(rawTotal) ? Math.max(0, rawTotal) : 60;
-  const intervalMin = Number.isFinite(rawInterval) ? Math.max(0, rawInterval) : 30;
+  const intervalMin = Number.isFinite(rawInterval)
+    ? Math.max(0, rawInterval)
+    : 30;
 
   const totalMs = totalMin * 60_000;
   const intervalMs = intervalMin * 60_000;
@@ -286,10 +288,11 @@ export default function StudySessionPage() {
   // ──────────────── Pixel UI tokens (inline, no extra CSS) ────────────────
   const font = { fontFamily: '"Press Start 2P", monospace' as const };
   const pageBg: React.CSSProperties = {
-    backgroundColor: "#EAF2F8",
-    backgroundImage:
-      "radial-gradient(rgba(61,126,207,.08) 1px, transparent 1px)",
-    backgroundSize: "16px 16px",
+    backgroundImage: "url(/background.png)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
   };
   const cardStyle: React.CSSProperties = {
     borderRadius: 20,

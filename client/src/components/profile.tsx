@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Clock, Settings, ChevronDown, ChevronUp, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import logo from '/logo.png';
+// import logo from '/logo.png';
 const PIXEL = '"Press Start 2P", monospace';
 
 export default function ProfileDashboard() {
@@ -257,23 +257,22 @@ export default function ProfileDashboard() {
     <div
       className="min-h-screen relative"
       style={{
-        // Subtle pixel grid + soft tint background (keeps dashboard clean)
-        backgroundImage:
-          `radial-gradient(#dbe9f3 1px, transparent 1px),
-           linear-gradient(180deg, #EEF6FA 0%, #F9F6EF 100%)`,
-        backgroundSize: '16px 16px, 100% 100%',
-        backgroundPosition: '0 0, 0 0'
+        // Use profileBackground.png from the public folder
+        backgroundImage: `url('/profileBackground.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed' // Keeps the background stationary on scroll
       }}
     >
       {/* NAVBAR */}
-      <nav className="relative z-10" style={{ borderBottom: '1px solid #E2E8F0', backgroundColor: 'rgba(249, 246, 239, 0.92)', backdropFilter: 'blur(8px)' }}>
+      <nav className="relative z-10" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.3)', backgroundColor: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(16px)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <h1
               className="inline-flex items-center gap-3 text-lg sm:text-xl md:text-2xl tracking-wider whitespace-nowrap"
               style={{ color: '#2B6B6B', fontFamily: PIXEL }}>
               <img
-                src={logo}
+                src="/logo.png"
                 alt="Lock In logo"
                 className="w-8 h-8 object-contain"
                 draggable={false}
@@ -537,9 +536,9 @@ export default function ProfileDashboard() {
                     tick={{ fontSize: 10, fontFamily: '"Press Start 2P", monospace' }}
                     tickFormatter={shortMonthLabel}
                     interval="preserveStartEnd"   // let Recharts drop some ticks if needed
-                    minTickGap={16}               // extra spacing between ticks
-                    tickMargin={10}               // pushes labels away from axis
-                    height={55}                   // room for the angled labels
+                    minTickGap={16}                // extra spacing between ticks
+                    tickMargin={10}                // pushes labels away from axis
+                    height={55}                    // room for the angled labels
                     angle={-25}
                     textAnchor="end"
                   />
