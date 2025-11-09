@@ -15,7 +15,7 @@ type BreakEntry = {
 
 async function postSessionResult(payload: any) {
   try {
-    await fetch("http://127.0.0.1:5001/api/create-session", {
+    await fetch("https://lock-in-sable.vercel.app/api/create-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       keepalive: true,
