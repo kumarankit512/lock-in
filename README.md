@@ -54,7 +54,7 @@ I was losing study time to tiny **bad habits** I barely noticed: fixing hair, ru
 
 ---
 
-## 🛠️ How I Built It
+## 🛠️ How We Built It
 
 ### Stack
 - **Frontend:** React + TypeScript, HTML5 Canvas overlays  
