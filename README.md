@@ -71,23 +71,24 @@ I was losing study time to tiny **bad habits** I barely noticed: fixing hair, ru
 
 ---
 
-## 💬 In-App Coach — Gemini Chatbot
+## Gemini Chatbot
 
 To complement real-time nudges, Lock In includes a **Gemini-powered study coach** embedded in the app:
-
-- **Context-aware tips (no video leaves device):** The chatbot receives only anonymized session context—e.g., current focus state, recent habit counts, streak length, and break timers. It never sees raw video or landmarks.  
-- **Actionable guidance:** Ask for “2-minute reset routines,” posture/eye-strain relief, or CBT-style reframes for urges like nail biting. The coach responds with **micro-plans (30–120s)** rather than essays.  
-- **Gentle accountability:** When repeated habits pop up (e.g., eye rubs), the coach suggests a short intervention (“blink-20s + moisture drops later”) and sets a lightweight intention for the next 10 minutes.  
 - **Voice mode:** Responses are spoken via **ElevenLabs** for hands-free study; users can switch between text-only and voice at any time.  
 - **Boundaries & privacy:** Prompts are stripped of PII; the model never receives or stores images. Users can disable context sharing or use the coach as a generic study chatbot.
 
-**Under the hood**
+# 1) Clone
+git clone https://github.com/your-org/your-repo.git
+cd your-repo
 
-- **Prompt schema:**  
-  ```json
-  { "focus_state": "FOCUSED|NOT_FOCUSED|PAUSED",
-    "streak_minutes": 17,
-    "habits_last_10m": { "hair_touch": 2, "eye_rub": 0, "nail_bite": 1, "phone_pickup": 0 },
-    "next_break_in": "08:30",
-    "goals_today": ["Finish notes ch.3", "Quiz Q1–Q10"]
-  }
+# 2) Install client
+cd client
+npm install
+npm run dev
+
+# 3) (Optional) API server
+cd ../server
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python app.py
+
