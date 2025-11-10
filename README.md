@@ -78,17 +78,17 @@ To complement real-time nudges, Lock In includes a **Gemini-powered study coach*
 - **Boundaries & privacy:** Prompts are stripped of PII; the model never receives or stores images. Users can disable context sharing or use the coach as a generic study chatbot.
 
 # 1) Clone
-git clone https://github.com/your-org/your-repo.git
+git clone https://github.com/your-org/your-repo.git<br>
 cd your-repo
 
 # 2) Install client
-cd client
-npm install
-npm run dev
+cd client<br>
+npm install<br>
+npm run dev<br>
 
 # 3) (Optional) API server
-cd ../server
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+cd ../server<br>
+python -m venv .venv && source .venv/bin/activate<br>
+pip install -r requirements.txt<br>
 python app.py
 
