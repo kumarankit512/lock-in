@@ -249,7 +249,6 @@ export default function StudySessionPage() {
   useEffect(() => {
     if (!finished) return;
     const payload = buildBackendPayload();
-    console.log("Study session payload:", payload);
     postSessionResult(payload);
   }, [
     finished,
