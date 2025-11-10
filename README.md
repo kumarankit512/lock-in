@@ -4,7 +4,6 @@
 
 <p align="center">
   <a href="https://lockin.quest">▶ Try it live</a> ·
-  <a href="https://github.com/your-org/your-repo">GitHub Repo</a>
 </p>
 
 ---
