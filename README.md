@@ -73,13 +73,16 @@ I was losing study time to tiny **bad habits** I barely noticed: fixing hair, ru
 
 ### How It Works
 1. Sign up/ log into our platform
-2. Select a total study session time (30 mins, 60 mins, 120 mins, or custom)
-3. Select a work interval length
-4. Click 'Start Your Focus Session'
-5. Begin Studying! You can take a break by clicking 'Take A Break Now' and then resume the session. You also have access to the chatbot on the bottom right for any questions you have.
-6. Click 'End Session' once study session is done. You will get to see a quick summary of the recent study session stats.
-7. Click 'Start Another Session' to start another study session.
-8. Navigate to 'Profile' to change account credentials, see stats of recent sessions, activity log for the past year, all time metrics, and an interactive map! You can filter through the interactive map by selecting an option from the drop down menu.
+   <p align="center">
+  <a href="https://lockin.quest"> (LINK)</a> ·
+  </p>
+3. Select a total study session time (30 mins, 60 mins, 120 mins, or custom)
+4. Select a work interval length
+5. Click 'Start Your Focus Session'
+6. Begin Studying! You can take a break by clicking 'Take A Break Now' and then resume the session. You also have access to the chatbot on the bottom right for any questions you have.
+7. Click 'End Session' once study session is done. You will get to see a quick summary of the recent study session stats.
+8. Click 'Start Another Session' to start another study session.
+9. Navigate to 'Profile' to change account credentials, see stats of recent sessions, activity log for the past year, all time metrics, and an interactive map! You can filter through the interactive map by selecting an option from the drop down menu.
 
    
 ---
