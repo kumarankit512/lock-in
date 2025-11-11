@@ -3,7 +3,7 @@
 **Lock In** is a privacy-first focus coach that runs entirely in your browser. It uses your webcam to detect micro-distractions and **bad habits**—like hair touching, eye/nose rubbing, nail biting, and phone pick-ups—and gives gentle, real-time nudges. You get a session timer, smart breaks, a dashboard of focus metrics—**all on-device**—plus an in-app coach powered by **Gemini** with **ElevenLabs** voice.
 
 <p align="center">
-  <a href="https://lockin.quest">▶ Try it live</a> ·
+  <a href="https://lockin.quest">▶ Try it live</a> 
 </p>
 
 ---
@@ -72,9 +72,9 @@ I was losing study time to tiny **bad habits** I barely noticed: fixing hair, ru
 5. **Metrics** aggregate client-side; optional anonymized sync
 
 ### How It Works
-1. Sign up/ log into our platform
+1. 
    <p align="center">
-  <a href="https://lockin.quest"> (LINK)</a> ·
+  <a href="https://lockin.quest"> Sign up/ log into our platform (LINK)</a> 
   </p>
 3. Select a total study session time (30 mins, 60 mins, 120 mins, or custom)
 4. Select a work interval length
