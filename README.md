@@ -74,7 +74,8 @@ I was losing study time to tiny **bad habits** I barely noticed: fixing hair, ru
 ### How It Works
 1. 
    <p align="center">
-  <a href="https://lockin.quest"> Sign up/ log into our platform (LINK)</a> 
+   Sign up/ log into our platform
+  <a href="https://lockin.quest"> (LINK)</a> 
   </p>
 3. Select a total study session time (30 mins, 60 mins, 120 mins, or custom)
 4. Select a work interval length
